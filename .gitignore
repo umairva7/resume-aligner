@@ -1,1 +1,32 @@
+# Virtual environment
 .venv/
+env/
+venv/
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment files
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# User Uploads
+uploads/*
+!uploads/.gitkeep
+!uploads/base_resumes/.gitkeep
+!uploads/tailored_resumes/.gitkeep
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
