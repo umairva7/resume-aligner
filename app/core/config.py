@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     # Storage Paths
     BASE_RESUME_DIR: Path = BASE_DIR / "uploads" / "base_resumes"
     TAILORED_RESUME_DIR: Path = BASE_DIR / "uploads" / "tailored_resumes"
+    DOCX_TEMPLATE_PATH: Path = BASE_DIR / "uploads" / "umair_backend_v2.docx"
 
     # LLM Configuration
     LLM_PROVIDER: str = "mock"  # Options: "mock", "ollama", "groq", "huggingface", "gemini"
