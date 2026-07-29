@@ -1,7 +1,10 @@
-from typing import Generator
+from typing import Generator, Optional
+from fastapi import Request, HTTPException, Depends, status
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.core.config import settings
 from app.db.session import SessionLocal
+from app.db import models
 from app.repositories.resume_repository import ResumeRepository
 from app.services.parser_service import ResumeParserService
 from app.services.storage_service import StorageService
@@ -57,3 +60,28 @@ def get_tailor_service(
     if repo is None:
         repo = get_resume_repository()
     return ResumeTailorService(llm_provider=llm, repository=repo)
+
+def get_current_user_optional(request: Request, db: Session = Depends(get_db)) -> Optional[models.User]:
+    session_token = request.cookies.get("session_token")
+    if not session_token:
+        return None
+        
+    user_session = db.query(models.UserSession).filter(models.UserSession.session_token == session_token).first()
+    if not user_session:
+        return None
+        
+    if user_session.expires_at < datetime.utcnow():
+        # Session expired
+        db.delete(user_session)
+        db.commit()
+        return None
+        
+    return user_session.user
+
+def get_current_user(current_user: Optional[models.User] = Depends(get_current_user_optional)) -> models.User:
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+    return current_user

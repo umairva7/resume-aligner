@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api import deps
+from app.db import models
 from app.schemas.resume import BaseResumeResponse, BaseResumeDetailResponse
 from app.utils.file_helpers import is_allowed_file
 
@@ -10,6 +11,7 @@ router = APIRouter()
 async def upload_base_resume(
     file: UploadFile = File(...),
     db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
     storage_service = Depends(deps.get_storage_service),
     parser_service = Depends(deps.get_parser_service)
 ):
@@ -37,17 +39,21 @@ async def upload_base_resume(
     resume = repo.create(
         filename=filename,
         file_path=str(saved_path),
-        extracted_text=extracted_text
+        extracted_text=extracted_text,
+        user_id=current_user.id
     )
 
     return resume
 
 
 @router.get("/active", response_model=BaseResumeDetailResponse)
-def get_active_resume(db: Session = Depends(deps.get_db)):
+def get_active_resume(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user)
+):
     """Retrieve the currently active base resume."""
     repo = deps.get_resume_repository(db)
-    resume = repo.get_active_resume()
+    resume = repo.get_active_resume(user_id=current_user.id)
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

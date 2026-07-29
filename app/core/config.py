@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
 
+    # Auth Configuration
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    SESSION_SECRET: str = "super-secret-key-change-in-production"
+    FRONTEND_URL: str = "http://localhost:8000"
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/callback"
+
     class Config:
         env_file = ".env"
         extra = "ignore"
