@@ -33,7 +33,7 @@ Manually rewriting your resume for every job application is:
 | Component | Technology | Why |
 | --- | --- | --- |
 | **Backend API** | FastAPI (Python) | Fast, clean, built for APIs. You know Python. |
-| **LLM** | Claude (Anthropic) | Best at understanding context and rewriting naturally. Better than GPT for nuance. |
+| **LLM** | Use Ollama. | Best at understanding context and rewriting naturally. Better than GPT for nuance. |
 | **Storage** | Local filesystem + SQLite | Simple for MVP. No database overhead. Scales fine for 100s of resumes. |
 | **Frontend** | HTML + Fetch API | Lightweight, zero dependencies, fast iteration. You can replace with React/Vue later. |
 | **Deployment** | Replit/Railway/Vercel | Free tier, instant deploy, no DevOps headaches for MVP. |
@@ -99,4 +99,4 @@ Manually rewriting your resume for every job application is:
 
 - Python 3.9+
 - pip (Python package manager)
-- Anthropic API key (free: <https://console.anthropic.com>)
+- Use Ollama.
