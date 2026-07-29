@@ -79,7 +79,7 @@ class GroqLLMProvider(BaseLLMProvider):
     Perfect for portfolio deployment on Railway/Render.
     """
     
-    def __init__(self, api_key: str = settings.GROQ_API_KEY, model: str = "llama3-8b-8192"):
+    def __init__(self, api_key: str = settings.GROQ_API_KEY, model: str = settings.GROQ_MODEL):
         self.api_key = api_key
         self.model = model
 

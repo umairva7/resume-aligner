@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3"
     GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
     HF_API_KEY: str = ""
     HF_MODEL: str = "meta-llama/Meta-Llama-3-8B-Instruct"
     GEMINI_API_KEY: str = ""
