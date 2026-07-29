@@ -16,9 +16,12 @@ class Settings(BaseSettings):
     TAILORED_RESUME_DIR: Path = BASE_DIR / "uploads" / "tailored_resumes"
 
     # LLM Configuration
-    LLM_PROVIDER: str = "ollama"  # Options: "ollama", "mock", "gemini", "openai"
+    LLM_PROVIDER: str = "mock"  # Options: "mock", "ollama", "groq", "huggingface", "gemini"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3"
+    GROQ_API_KEY: str = ""
+    HF_API_KEY: str = ""
+    HF_MODEL: str = "meta-llama/Meta-Llama-3-8B-Instruct"
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
 

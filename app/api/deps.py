@@ -5,7 +5,7 @@ from app.db.session import SessionLocal
 from app.repositories.resume_repository import ResumeRepository
 from app.services.parser_service import ResumeParserService
 from app.services.storage_service import StorageService
-from app.services.llm_service import BaseLLMProvider, OllamaLLMProvider, MockLLMProvider, GeminiLLMProvider
+from app.services.llm_service import BaseLLMProvider, OllamaLLMProvider, MockLLMProvider, GeminiLLMProvider, GroqLLMProvider, HuggingFaceLLMProvider
 from app.services.tailor_service import ResumeTailorService
 
 def get_db() -> Generator[Session, None, None]:
@@ -28,14 +28,15 @@ def get_storage_service() -> StorageService:
 
 def get_llm_provider() -> BaseLLMProvider:
     provider_type = settings.LLM_PROVIDER.lower()
-    if provider_type == "mock":
-        return MockLLMProvider()
+    if provider_type in ["huggingface", "hf"]:
+        return HuggingFaceLLMProvider()
+    elif provider_type == "groq":
+        return GroqLLMProvider()
     elif provider_type == "gemini":
         return GeminiLLMProvider()
     elif provider_type == "ollama":
         return OllamaLLMProvider()
     else:
-        # Default fallback to Mock if invalid or unknown provider configured
         return MockLLMProvider()
 
 def get_tailor_service(
