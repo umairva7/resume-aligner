@@ -10,6 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const outputSection = document.getElementById("outputSection");
     const tailoredResultOutput = document.getElementById("tailoredResultOutput");
     const copyBtn = document.getElementById("copyBtn");
+    const downloadPdfBtn = document.getElementById("downloadPdfBtn");
+
+    let currentTailoredId = null;
 
     // Fetch Active Base Resume on Load
     fetchActiveResume();
@@ -54,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const jobDescription = document.getElementById("jdInput").value;
 
         submitTailorBtn.disabled = true;
-        submitTailorBtn.innerHTML = "⏳ Tailoring Resume with AI (may take 20-30s)...";
+        submitTailorBtn.innerHTML = "⏳ Tailoring Resume with AI (may take 5-10s)...";
 
         try {
             const res = await fetch("/api/v1/tailor/align", {
@@ -72,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const data = await res.json();
+            currentTailoredId = data.id;
             outputSection.classList.remove("hidden");
             tailoredResultOutput.textContent = data.tailored_text;
             outputSection.scrollIntoView({ behavior: "smooth" });
@@ -83,11 +87,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Download ATS-Friendly PDF
+    downloadPdfBtn.addEventListener("click", () => {
+        if (!currentTailoredId) return alert("No tailored resume available to download.");
+        window.location.href = `/api/v1/tailor/download-pdf/${currentTailoredId}`;
+    });
+
     // Copy to Clipboard
     copyBtn.addEventListener("click", () => {
         navigator.clipboard.writeText(tailoredResultOutput.textContent);
         copyBtn.textContent = "✅ Copied!";
-        setTimeout(() => copyBtn.textContent = "📋 Copy to Clipboard", 2000);
+        setTimeout(() => copyBtn.textContent = "📋 Copy Text", 2000);
     });
 
     async function fetchActiveResume() {

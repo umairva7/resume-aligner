@@ -8,6 +8,8 @@ from app.services.storage_service import StorageService
 from app.services.llm_service import BaseLLMProvider, OllamaLLMProvider, MockLLMProvider, GeminiLLMProvider, GroqLLMProvider, HuggingFaceLLMProvider
 from app.services.tailor_service import ResumeTailorService
 
+from app.services.pdf_service import PDFGeneratorService
+
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
@@ -25,6 +27,9 @@ def get_parser_service() -> ResumeParserService:
 
 def get_storage_service() -> StorageService:
     return StorageService()
+
+def get_pdf_service() -> PDFGeneratorService:
+    return PDFGeneratorService()
 
 def get_llm_provider() -> BaseLLMProvider:
     provider_type = settings.LLM_PROVIDER.lower()

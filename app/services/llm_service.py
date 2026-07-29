@@ -28,7 +28,7 @@ class OllamaLLMProvider(BaseLLMProvider):
         
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(url, json=payload)
-            response.raise_for_error()
+            response.raise_for_status()
             data = response.json()
             return data.get("response", "")
 
@@ -68,7 +68,7 @@ class HuggingFaceLLMProvider(BaseLLMProvider):
         
         async with httpx.AsyncClient(timeout=90.0) as client:
             response = await client.post(url, headers=headers, json=payload)
-            response.raise_for_error()
+            response.raise_for_status()
             data = response.json()
             return data["choices"][0]["message"]["content"]
 
@@ -103,7 +103,7 @@ class GroqLLMProvider(BaseLLMProvider):
         
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(url, headers=headers, json=payload)
-            response.raise_for_error()
+            response.raise_for_status()
             data = response.json()
             return data["choices"][0]["message"]["content"]
 
@@ -131,7 +131,7 @@ class GeminiLLMProvider(BaseLLMProvider):
         
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(url, json=payload)
-            response.raise_for_error()
+            response.raise_for_status()
             data = response.json()
             try:
                 return data["candidates"][0]["content"]["parts"][0]["text"]

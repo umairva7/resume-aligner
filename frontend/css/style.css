@@ -185,6 +185,20 @@ input[type="text"]:focus, textarea:focus {
     color: white;
 }
 
+.btn-accent {
+    background-color: #059669;
+    color: white;
+}
+
+.btn-accent:hover {
+    background-color: #047857;
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .active-badge {
     margin-top: 1rem;
     padding: 0.75rem;
