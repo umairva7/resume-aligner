@@ -3,76 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Aligner - AI Powered Resume Tailor</title>
+    <title>Resume Aligner - Enterprise AI Tailoring Studio</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <header class="navbar">
-            <div class="logo">
-                <span class="sparkle">✨</span>
-                <h1>Resume Aligner</h1>
+    <div class="saas-layout">
+        <!-- Top Enterprise Navigation Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="logo-icon">✨</div>
+                <div class="brand-text">
+                    <span class="app-title">Resume Aligner</span>
+                    <span class="app-version">v2.4 Enterprise</span>
+                </div>
             </div>
-            <span class="badge">Ollama Powered</span>
+            
+            <div class="header-actions">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span class="status-text">AI Engine: <strong id="currentProviderLabel">Groq (Llama 3.1)</strong></span>
+                </div>
+            </div>
         </header>
 
-        <main class="main-content">
-            <!-- Upload Section -->
-            <section class="card upload-card">
-                <h2>1. Base Resume</h2>
-                <p class="subtitle">Upload your base resume (PDF, DOCX, or TXT). Stored locally.</p>
-                
-                <form id="uploadForm" class="dropzone">
-                    <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" required hidden>
-                    <label for="resumeFileInput" class="file-label">
-                        <div class="icon-cloud">📄</div>
-                        <span id="fileNameDisplay">Choose a file or drop here</span>
-                        <span class="file-types">Supports PDF, DOCX, TXT</span>
-                    </label>
-                    <button type="submit" class="btn btn-secondary">Upload Base Resume</button>
-                </form>
-                
-                <div id="activeResumeBadge" class="active-badge hidden">
-                    ✅ Current Active Resume: <strong id="activeResumeName"></strong>
+        <!-- Split Screen Main Workspace -->
+        <main class="workspace-viewport">
+            
+            <!-- LEFT CONTROL PANEL (40%) -->
+            <aside class="control-panel">
+                <div class="panel-inner">
+                    
+                    <!-- STEP 1: BASE RESUME SELECTION -->
+                    <section class="panel-section">
+                        <div class="section-header">
+                            <span class="step-num">1</span>
+                            <h3>Base Candidate Resume</h3>
+                        </div>
+                        <p class="section-desc">Upload your master resume. Extracted once, parsed locally.</p>
+
+                        <form id="uploadForm">
+                            <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" required hidden>
+                            <label for="resumeFileInput" id="dropzoneLabel" class="enterprise-dropzone">
+                                <div class="dropzone-icon">📥</div>
+                                <div class="dropzone-text">
+                                    <span class="primary-text" id="fileNameDisplay">Drag & Drop Resume or Browse</span>
+                                    <span class="sub-text">Supports PDF, DOCX, TXT (Max 10MB)</span>
+                                </div>
+                            </label>
+                            <button type="submit" id="uploadBtn" class="btn btn-secondary full-width">Upload & Extract Resume</button>
+                        </form>
+
+                        <div id="activeResumeBadge" class="active-file-card hidden">
+                            <div class="file-card-icon">📄</div>
+                            <div class="file-card-details">
+                                <span class="file-card-name" id="activeResumeName">--</span>
+                                <span class="file-card-meta">Ready for AI Alignment</span>
+                            </div>
+                            <span class="status-pill">Active</span>
+                        </div>
+                    </section>
+
+                    <!-- STEP 2: TARGET JOB CONTEXT -->
+                    <section class="panel-section">
+                        <div class="section-header">
+                            <span class="step-num">2</span>
+                            <h3>Target Job Description</h3>
+                        </div>
+                        <p class="section-desc">Provide target job title and description to align skills.</p>
+
+                        <form id="tailorForm">
+                            <div class="form-field">
+                                <label for="jobTitleInput">Target Job Title</label>
+                                <input type="text" id="jobTitleInput" placeholder="e.g. Senior Staff Backend Engineer" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="jdInput">Job Post Description</label>
+                                <textarea id="jdInput" rows="7" placeholder="Paste the key responsibilities, required skills, and qualifications..." required></textarea>
+                            </div>
+
+                            <!-- Progressive Disclosure: Advanced Options Toggle -->
+                            <details class="advanced-settings">
+                                <summary class="settings-summary">⚙️ Advanced Inference Settings</summary>
+                                <div class="settings-content">
+                                    <div class="form-field">
+                                        <label for="temperatureRange">Tailoring Strictness: <span id="tempValue">0.3</span></label>
+                                        <input type="range" id="temperatureRange" min="0.1" max="0.9" step="0.1" value="0.3">
+                                        <span class="field-hint">Lower values keep facts strict; higher values adapt formatting more dynamically.</span>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <button type="submit" id="submitTailorBtn" class="btn btn-primary full-width cta-btn">
+                                <span class="btn-icon">⚡</span>
+                                <span class="btn-text">Tailor Resume with AI</span>
+                            </button>
+                        </form>
+                    </section>
+
                 </div>
+            </aside>
+
+
+            <!-- RIGHT LIVE DOCUMENT CANVAS (60%) -->
+            <section class="document-preview-viewport">
+                
+                <!-- CANVAS TOOLBAR -->
+                <div class="canvas-toolbar">
+                    <div class="toolbar-left">
+                        <span class="canvas-title">Document Preview Canvas</span>
+                        
+                        <!-- MATCH SCORE WIDGET -->
+                        <div id="matchScoreWidget" class="match-score-pill hidden">
+                            <span class="score-label">ATS Alignment:</span>
+                            <span class="score-value" id="matchScoreValue">92%</span>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-actions">
+                        <button id="downloadPdfBtn" class="btn btn-sm btn-action" disabled>
+                            <span>📥 Download PDF</span>
+                        </button>
+                        <button id="downloadDocxBtn" class="btn btn-sm btn-action" disabled>
+                            <span>📝 Download Word</span>
+                        </button>
+                        <button id="copyBtn" class="btn btn-sm btn-secondary-action" disabled>
+                            <span>📋 Copy</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- A4 / LETTER CANVAS PAPER CONTAINER -->
+                <div class="document-paper-container">
+                    
+                    <!-- INITIAL EMPTY STATE -->
+                    <div id="emptyState" class="paper-empty-state">
+                        <div class="empty-icon">📑</div>
+                        <h3>No Tailored Resume Generated Yet</h3>
+                        <p>Upload a base resume and paste a job description on the left panel to render your AI-tailored resume in real-time.</p>
+                    </div>
+
+                    <!-- SHIMMER SKELETON LOADER -->
+                    <div id="shimmerLoader" class="shimmer-container hidden">
+                        <div class="shimmer-line title-line"></div>
+                        <div class="shimmer-line subtitle-line"></div>
+                        <div class="shimmer-spacer"></div>
+                        <div class="shimmer-line section-line"></div>
+                        <div class="shimmer-line body-line"></div>
+                        <div class="shimmer-line body-line"></div>
+                        <div class="shimmer-line body-line short"></div>
+                        <div class="shimmer-spacer"></div>
+                        <div class="shimmer-line section-line"></div>
+                        <div class="shimmer-line body-line"></div>
+                        <div class="shimmer-line body-line"></div>
+                    </div>
+
+                    <!-- RENDERED DOCUMENT PAPER -->
+                    <div id="paperContent" class="document-paper hidden">
+                        <div id="renderedDocumentOutput" class="document-typography"></div>
+                    </div>
+
+                </div>
+
             </section>
 
-            <!-- Tailoring Section -->
-            <section class="card tailor-card">
-                <h2>2. Target Job Description</h2>
-                <p class="subtitle">Paste the job post description and job title to generate an aligned resume.</p>
-                
-                <form id="tailorForm">
-                    <div class="form-group">
-                        <label for="jobTitleInput">Job Title</label>
-                        <input type="text" id="jobTitleInput" placeholder="e.g. Senior Full Stack Engineer" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="jdInput">Job Description</label>
-                        <textarea id="jdInput" rows="8" placeholder="Paste the job requirements, responsibilities, and key skills..." required></textarea>
-                    </div>
-                    <button type="submit" id="submitTailorBtn" class="btn btn-primary">
-                        <span>✨ Tailor Resume with AI</span>
-                    </button>
-                </form>
-            </section>
-
-            <!-- Output Section -->
-            <section id="outputSection" class="card result-card hidden">
-                <div class="result-header">
-                    <h2>3. Tailored Resume Result</h2>
-                    <div class="btn-group">
-                        <button id="downloadPdfBtn" class="btn btn-sm btn-accent">📥 Download ATS PDF</button>
-                        <button id="copyBtn" class="btn btn-sm">📋 Copy Text</button>
-                    </div>
-                </div>
-                <div class="result-box">
-                    <pre id="tailoredResultOutput"></pre>
-                </div>
-            </section>
         </main>
     </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <script src="js/app.js"></script>
 </body>

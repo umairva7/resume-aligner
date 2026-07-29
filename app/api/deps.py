@@ -9,6 +9,7 @@ from app.services.llm_service import BaseLLMProvider, OllamaLLMProvider, MockLLM
 from app.services.tailor_service import ResumeTailorService
 
 from app.services.pdf_service import PDFGeneratorService
+from app.services.docx_service import DOCXGeneratorService
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -30,6 +31,9 @@ def get_storage_service() -> StorageService:
 
 def get_pdf_service() -> PDFGeneratorService:
     return PDFGeneratorService()
+
+def get_docx_service() -> DOCXGeneratorService:
+    return DOCXGeneratorService()
 
 def get_llm_provider() -> BaseLLMProvider:
     provider_type = settings.LLM_PROVIDER.lower()

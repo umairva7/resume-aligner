@@ -74,3 +74,38 @@ def download_tailored_pdf(
         filename=clean_filename,
         headers={"Content-Disposition": f'attachment; filename="{clean_filename}"'}
     )
+
+
+@router.get("/download-docx/{tailored_id}")
+def download_tailored_docx(
+    tailored_id: int,
+    db: Session = Depends(deps.get_db),
+    docx_service = Depends(deps.get_docx_service)
+):
+    """Generate and return ATS-friendly Word DOCX file for a tailored resume."""
+    tailored_record = db.query(TailoredResume).filter(TailoredResume.id == tailored_id).first()
+    if not tailored_record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tailored resume record not found."
+        )
+
+    try:
+        docx_path = docx_service.create_ats_docx(
+            markdown_text=tailored_record.tailored_text,
+            filename_prefix=f"Tailored_{tailored_record.job_title or 'Resume'}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"DOCX Generation failed: {str(e)}"
+        )
+
+    clean_filename = f"ATS_Tailored_Resume_{tailored_record.job_title or 'Target'}.docx".replace(" ", "_")
+
+    return FileResponse(
+        path=str(docx_path),
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=clean_filename,
+        headers={"Content-Disposition": f'attachment; filename="{clean_filename}"'}
+    )
