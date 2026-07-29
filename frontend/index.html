@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Aligner - AI Powered Resume Tailor</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="navbar">
+            <div class="logo">
+                <span class="sparkle">✨</span>
+                <h1>Resume Aligner</h1>
+            </div>
+            <span class="badge">Ollama Powered</span>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="card upload-card">
+                <h2>1. Base Resume</h2>
+                <p class="subtitle">Upload your base resume (PDF, DOCX, or TXT). Stored locally.</p>
+                
+                <form id="uploadForm" class="dropzone">
+                    <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" required hidden>
+                    <label for="resumeFileInput" class="file-label">
+                        <div class="icon-cloud">📄</div>
+                        <span id="fileNameDisplay">Choose a file or drop here</span>
+                        <span class="file-types">Supports PDF, DOCX, TXT</span>
+                    </label>
+                    <button type="submit" class="btn btn-secondary">Upload Base Resume</button>
+                </form>
+                
+                <div id="activeResumeBadge" class="active-badge hidden">
+                    ✅ Current Active Resume: <strong id="activeResumeName"></strong>
+                </div>
+            </section>
+
+            <!-- Tailoring Section -->
+            <section class="card tailor-card">
+                <h2>2. Target Job Description</h2>
+                <p class="subtitle">Paste the job post description and job title to generate an aligned resume.</p>
+                
+                <form id="tailorForm">
+                    <div class="form-group">
+                        <label for="jobTitleInput">Job Title</label>
+                        <input type="text" id="jobTitleInput" placeholder="e.g. Senior Full Stack Engineer" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jdInput">Job Description</label>
+                        <textarea id="jdInput" rows="8" placeholder="Paste the job requirements, responsibilities, and key skills..." required></textarea>
+                    </div>
+                    <button type="submit" id="submitTailorBtn" class="btn btn-primary">
+                        <span>✨ Tailor Resume with AI</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Output Section -->
+            <section id="outputSection" class="card result-card hidden">
+                <div class="result-header">
+                    <h2>3. Tailored Resume Result</h2>
+                    <button id="copyBtn" class="btn btn-sm">📋 Copy to Clipboard</button>
+                </div>
+                <div class="result-box">
+                    <pre id="tailoredResultOutput"></pre>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
