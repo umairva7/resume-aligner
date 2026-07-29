@@ -15,9 +15,12 @@ class Settings(BaseSettings):
     BASE_RESUME_DIR: Path = BASE_DIR / "uploads" / "base_resumes"
     TAILORED_RESUME_DIR: Path = BASE_DIR / "uploads" / "tailored_resumes"
 
-    # Ollama / LLM Configuration
+    # LLM Configuration
+    LLM_PROVIDER: str = "ollama"  # Options: "ollama", "mock", "gemini", "openai"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3"
+    GEMINI_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
