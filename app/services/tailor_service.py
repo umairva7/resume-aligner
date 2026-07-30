@@ -12,7 +12,7 @@ STRICT RULES:
 
 ===RESUME===
 # [Candidate Full Name]
-[Contact Info line separated by | (e.g. Location | Email | Phone | LinkedIn)]
+[Location/Phone/Email] | [LinkedIn]({linkedin_url}) | [GitHub]({github_url}){portfolio_string}
 
 ## PROFESSIONAL SUMMARY
 [Summary paragraph]
@@ -38,10 +38,17 @@ class ResumeTailorService:
         self.llm_provider = llm_provider
         self.repository = repository
 
-    async def tailor_resume(self, resume_id: int, job_title: str, job_description: str) -> str:
+    async def tailor_resume(self, resume_id: int, job_title: str, job_description: str, linkedin_url: str, github_url: str, portfolio_url: str = None) -> str:
         resume = self.repository.get_by_id(resume_id)
         if not resume:
             raise ValueError(f"Resume with ID {resume_id} not found.")
+
+        portfolio_string = f" | [Portfolio]({portfolio_url})" if portfolio_url else ""
+        system_prompt = SYSTEM_PROMPT.format(
+            linkedin_url=linkedin_url,
+            github_url=github_url,
+            portfolio_string=portfolio_string
+        )
 
         user_prompt = f"""
 TARGET JOB TITLE:
@@ -56,7 +63,7 @@ CANDIDATE BASE RESUME:
 Please generate a tailored version of the candidate's resume that optimizes keywords and highlights matching experience for this position.
 """
         response_text = await self.llm_provider.generate_response(
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=system_prompt,
             user_prompt=user_prompt
         )
 

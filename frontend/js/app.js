@@ -38,6 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentTailoredId = null;
     let rawTailoredMarkdown = "";
     let isAuthenticated = false;
+    
+    // Caching state to prevent duplicate requests
+    let lastSubmittedJobTitle = "";
+    let lastSubmittedJobDesc = "";
 
     // Check Auth Status on Load
     checkAuthStatus();
@@ -149,6 +153,11 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const jobTitle = document.getElementById("jobTitleInput")?.value || "";
         const jobDescription = document.getElementById("jdInput")?.value || "";
+        
+        // Prevent duplicate submissions for the exact same job description
+        if (jobTitle === lastSubmittedJobTitle && jobDescription === lastSubmittedJobDesc) {
+            return showToast("You have already tailored a resume for this exact job description! The result is currently displayed.", "info");
+        }
 
         // Show Shimmer Skeleton Loading State
         emptyState?.classList.add("hidden");
@@ -217,6 +226,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (downloadDocxBtn) downloadDocxBtn.disabled = false;
             if (copyBtn) copyBtn.disabled = false;
 
+            // Update caching state
+            lastSubmittedJobTitle = jobTitle;
+            lastSubmittedJobDesc = jobDescription;
+
             showToast("Resume tailored successfully!", "success");
         } catch (err) {
             shimmerLoader?.classList.add("hidden");
@@ -277,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/^### (.*$)/gim, '### $1')
             .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+            .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" style="color: #3b82f6; text-decoration: none;">$1</a>')
             .replace(/^\- (.*$)/gim, '<ul><li>$1</li></ul>')
             .replace(/<\/ul>\s*<ul>/gim, ''); // Merge consecutive ul blocks
             

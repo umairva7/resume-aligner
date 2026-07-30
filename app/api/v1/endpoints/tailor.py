@@ -23,14 +23,28 @@ async def align_resume(
             detail="No active base resume found. Upload a resume first."
         )
 
+    # 1. Check if we already generated a resume for this exact job description
+    target_job_title = payload.job_title or "Target Position"
+    existing_tailored = db.query(TailoredResume).filter(
+        TailoredResume.base_resume_id == active_resume.id,
+        TailoredResume.job_title == target_job_title,
+        TailoredResume.job_description_text == payload.job_description
+    ).order_by(TailoredResume.created_at.desc()).first()
+
+    if existing_tailored:
+        return existing_tailored
+
     llm = deps.get_llm_provider()
     tailor_service = deps.get_tailor_service(llm=llm, repo=repo)
 
     try:
         tailored_text = await tailor_service.tailor_resume(
             resume_id=active_resume.id,
-            job_title=payload.job_title or "Target Position",
-            job_description=payload.job_description
+            job_title=target_job_title,
+            job_description=payload.job_description,
+            linkedin_url=payload.linkedin_url,
+            github_url=payload.github_url,
+            portfolio_url=payload.portfolio_url
         )
     except Exception as e:
         raise HTTPException(

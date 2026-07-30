@@ -21,6 +21,9 @@ class BaseResumeDetailResponse(BaseResumeResponse):
 class TailorResumeRequest(BaseModel):
     job_title: Optional[str] = "Target Role"
     job_description: str
+    linkedin_url: str
+    github_url: str
+    portfolio_url: Optional[str] = None
 
 
 class TailoredResumeResponse(BaseModel):
