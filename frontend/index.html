@@ -13,10 +13,12 @@
 </head>
 <body>
     <div class="saas-layout">
-        <!-- Header - Modern Glass Bubble Navbar -->
+        <!-- Header Navbar -->
         <header class="app-header">
             <div class="header-brand">
-                <div class="logo-icon-bubble">✨</div>
+                <div class="logo-badge">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
                 <div class="brand-text">
                     <span class="app-title">Resume Aligner</span>
                     <span class="app-version">v2.4 Enterprise</span>
@@ -33,8 +35,8 @@
                 <div id="authWidget" class="auth-widget" style="display: flex; align-items: center; gap: 0.85rem;">
                     <button id="loginBtn" class="btn btn-sm btn-primary">Sign in with Google</button>
                     <div id="userProfile" class="user-profile hidden" style="display: flex; align-items: center; gap: 0.75rem;">
-                        <img id="userAvatar" src="" alt="Avatar" class="avatar-img" style="width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent-indigo);">
-                        <span id="userName" class="user-name" style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);"></span>
+                        <img id="userAvatar" src="" alt="Avatar" class="avatar-img" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--accent);">
+                        <span id="userName" class="user-name" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);"></span>
                         <button id="logoutBtn" class="btn btn-sm btn-secondary-action">Logout</button>
                     </div>
                 </div>
@@ -48,18 +50,20 @@
             <aside class="control-panel">
                 <div class="panel-inner">
                     
-                    <!-- STEP 1: BASE RESUME SELECTION BUBBLE -->
+                    <!-- STEP 1: BASE RESUME SELECTION -->
                     <section class="panel-section">
                         <div class="section-header">
                             <span class="step-bubble">1</span>
-                            <h3>Base Master Resume</h3>
+                            <h3>Master Candidate Resume</h3>
                         </div>
                         <p class="section-desc">Upload your primary master resume. Extracted once, secure & local.</p>
 
                         <form id="uploadForm">
                             <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" required hidden>
                             <label for="resumeFileInput" id="dropzoneLabel" class="bubble-dropzone">
-                                <div class="dropzone-icon">📥</div>
+                                <div class="dropzone-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                </div>
                                 <div class="dropzone-text">
                                     <span class="primary-text" id="fileNameDisplay">Drag & Drop Resume or Browse</span>
                                     <span class="sub-text">PDF, DOCX, TXT (Max 10MB)</span>
@@ -69,7 +73,9 @@
                         </form>
 
                         <div id="activeResumeBadge" class="active-file-card hidden">
-                            <div class="file-card-icon">📄</div>
+                            <div class="file-card-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            </div>
                             <div class="file-card-details">
                                 <span class="file-card-name" id="activeResumeName">--</span>
                                 <span class="file-card-meta">Ready for AI Alignment</span>
@@ -81,7 +87,7 @@
                         </div>
                     </section>
 
-                    <!-- STEP 2: TARGET JOB CONTEXT BUBBLE -->
+                    <!-- STEP 2: TARGET JOB CONTEXT -->
                     <section class="panel-section">
                         <div class="section-header">
                             <span class="step-bubble">2</span>
@@ -102,30 +108,39 @@
 
                             <!-- Social Link Profiles -->
                             <div class="form-field">
-                                <label for="linkedinInput">🔗 LinkedIn URL *</label>
+                                <label for="linkedinInput">LinkedIn Profile URL *</label>
                                 <div class="social-input-group">
-                                    <span class="social-input-icon">💼</span>
+                                    <span class="social-input-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                                    </span>
                                     <input type="url" id="linkedinInput" placeholder="https://linkedin.com/in/umair" required>
                                 </div>
                             </div>
                             <div class="form-field">
-                                <label for="githubInput">🐙 GitHub URL *</label>
+                                <label for="githubInput">GitHub Profile URL *</label>
                                 <div class="social-input-group">
-                                    <span class="social-input-icon">💻</span>
+                                    <span class="social-input-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                                    </span>
                                     <input type="url" id="githubInput" placeholder="https://github.com/umair" required>
                                 </div>
                             </div>
                             <div class="form-field">
-                                <label for="portfolioInput">🌐 Portfolio URL (Optional)</label>
+                                <label for="portfolioInput">Portfolio Website (Optional)</label>
                                 <div class="social-input-group">
-                                    <span class="social-input-icon">🚀</span>
+                                    <span class="social-input-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                    </span>
                                     <input type="url" id="portfolioInput" placeholder="https://umair.dev">
                                 </div>
                             </div>
 
-                            <!-- Advanced Options Bubble Toggle -->
+                            <!-- Advanced Settings Toggle -->
                             <details class="advanced-settings">
-                                <summary class="settings-summary">⚙️ Advanced Inference Settings</summary>
+                                <summary class="settings-summary">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    Advanced Inference Settings
+                                </summary>
                                 <div class="settings-content">
                                     <div class="form-field">
                                         <label for="temperatureRange">Tailoring Strictness: <span id="tempValue">0.3</span></label>
@@ -136,17 +151,15 @@
                             </details>
 
                             <button type="submit" id="submitTailorBtn" class="btn btn-primary full-width cta-btn">
-                                <span class="btn-icon">⚡</span>
                                 <span class="btn-text">Tailor Resume with AI</span>
                             </button>
 
                             <button type="button" id="historyBtn" class="btn btn-secondary full-width" style="margin-top: 0.75rem;">
-                                <span class="btn-icon">🕒</span>
                                 <span class="btn-text">Version History</span>
                             </button>
                             
-                            <div id="historyContainer" class="hidden" style="margin-top: 1rem; border: 1px solid var(--glass-border); border-radius: var(--radius-bubble-sm); padding: 0.85rem; background: rgba(0,0,0,0.25);">
-                                <h4 style="margin: 0 0 0.6rem 0; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Recent Tailors (Last 6 Hours)</h4>
+                            <div id="historyContainer" class="hidden" style="margin-top: 1rem; border: 1px solid var(--border); border-radius: var(--radius-bubble-sm); padding: 0.85rem; background: var(--base);">
+                                <h4 style="margin: 0 0 0.6rem 0; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Recent Tailors (Last 6 Hours)</h4>
                                 <ul id="historyList" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
                                 </ul>
                             </div>
@@ -163,9 +176,9 @@
                 <!-- CANVAS TOOLBAR -->
                 <div class="canvas-toolbar">
                     <div class="toolbar-left">
-                        <span class="canvas-title">Live Preview</span>
+                        <span class="canvas-title">Live Preview Canvas</span>
                         
-                        <!-- SCORES ANIMATED BUBBLE WIDGET -->
+                        <!-- SCORES WIDGET -->
                         <div id="scoresWidget" class="scores-container hidden">
                             <div class="match-score-bubble score-original">
                                 <span>Before:</span>
@@ -180,13 +193,13 @@
 
                     <div class="toolbar-actions">
                         <button id="downloadPdfBtn" class="btn btn-sm btn-action" disabled>
-                            <span>📥 Download PDF</span>
+                            <span>Download PDF</span>
                         </button>
                         <button id="downloadDocxBtn" class="btn btn-sm btn-action" disabled>
-                            <span>📝 Download Word</span>
+                            <span>Download Word</span>
                         </button>
                         <button id="copyBtn" class="btn btn-sm btn-secondary-action" disabled>
-                            <span>📋 Copy</span>
+                            <span>Copy Markdown</span>
                         </button>
                     </div>
                 </div>
@@ -194,14 +207,16 @@
                 <!-- A4 / LETTER CANVAS PAPER CONTAINER -->
                 <div class="document-paper-container">
                     
-                    <!-- INITIAL EMPTY STATE BUBBLE -->
+                    <!-- INITIAL EMPTY STATE -->
                     <div id="emptyState" class="paper-empty-state">
-                        <div class="empty-icon-bubble">📑</div>
+                        <div class="empty-icon-badge">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        </div>
                         <h3>No Tailored Resume Generated Yet</h3>
                         <p>Upload a base resume and paste a job description on the left panel to render your AI-tailored resume in real-time.</p>
                     </div>
 
-                    <!-- SHIMMER SKELETON LOADER BUBBLE -->
+                    <!-- SHIMMER SKELETON LOADER -->
                     <div id="shimmerLoader" class="shimmer-container hidden">
                         <div class="shimmer-line title-line"></div>
                         <div class="shimmer-line subtitle-line"></div>
@@ -219,13 +234,13 @@
                     <!-- RENDERED DOCUMENT PAPER -->
                     <div id="paperContent" class="document-paper hidden">
                         <div id="analysisNoteCard" class="analysis-note-card hidden">
-                            <h4>💡 Strategic Insight</h4>
+                            <h4>Strategic Alignment Insight</h4>
                             <p id="analysisNoteText"></p>
                         </div>
                         <div id="renderedDocumentOutput" class="document-typography"></div>
                         
                         <div class="expiration-warning" style="text-align: center; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px dashed #cbd5e1; color: #94a3b8; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                            <span>⏳</span> This tailored resume will be automatically deleted 6 hours after creation.
+                            <span>This tailored resume will be automatically removed 6 hours after generation.</span>
                         </div>
                     </div>
 
@@ -236,7 +251,7 @@
         </main>
     </div>
 
-    <!-- Notification Toast Container for Floating Bubbles -->
+    <!-- Notification Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <script src="js/app.js"></script>
