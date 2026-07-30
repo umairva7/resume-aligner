@@ -25,8 +25,62 @@ document.addEventListener("DOMContentLoaded", () => {
     const copyBtn = document.getElementById("copyBtn");
     const toastContainer = document.getElementById("toastContainer");
 
+    // Auth Elements
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userProfile = document.getElementById("userProfile");
+    const userAvatar = document.getElementById("userAvatar");
+    const userName = document.getElementById("userName");
+
     let currentTailoredId = null;
     let rawTailoredMarkdown = "";
+    let isAuthenticated = false;
+
+    // Check Auth Status on Load
+    checkAuthStatus();
+
+    async function checkAuthStatus() {
+        try {
+            const res = await fetch("/api/v1/auth/me");
+            if (res.ok) {
+                const user = await res.json();
+                isAuthenticated = true;
+                loginBtn?.classList.add("hidden");
+                userProfile?.classList.remove("hidden");
+                if (userName) userName.textContent = user.name || user.email;
+                if (userAvatar && user.picture) userAvatar.src = user.picture;
+                
+                // Only fetch active resume if authenticated
+                fetchActiveResume();
+            } else {
+                isAuthenticated = false;
+                loginBtn?.classList.remove("hidden");
+                userProfile?.classList.add("hidden");
+                
+                // Show prompt in empty state
+                if (emptyState) {
+                    emptyState.innerHTML = `<div class="empty-icon">🔒</div>
+                                            <h3>Authentication Required</h3>
+                                            <p>Please <strong>Sign in with Google</strong> using the button in the top right to upload resumes and use the AI Tailoring Studio.</p>`;
+                }
+            }
+        } catch (err) {
+            console.error("Auth check failed:", err);
+        }
+    }
+
+    loginBtn?.addEventListener("click", () => {
+        window.location.href = "/api/v1/auth/login";
+    });
+
+    logoutBtn?.addEventListener("click", async () => {
+        try {
+            await fetch("/api/v1/auth/logout", { method: "POST" });
+            window.location.reload();
+        } catch (err) {
+            showToast("Logout failed", "error");
+        }
+    });
 
     // Temperature slider update
     if (temperatureRange && tempValue) {
@@ -35,8 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Fetch Active Base Resume on Load
-    fetchActiveResume();
+    // Fetch Active Base Resume is now called inside checkAuthStatus()
 
     // File Input Display
     fileInput?.addEventListener("change", (e) => {
@@ -48,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle Upload Base Resume
     uploadForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (!isAuthenticated) return showToast("Please sign in to upload resumes.", "error");
         if (!fileInput || !fileInput.files.length) return showToast("Please select a file to upload.", "error");
 
         if (uploadBtn) {
@@ -65,6 +119,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!res.ok) {
+                if (res.status === 401) {
+                    throw new Error("Session expired. Please sign in again.");
+                }
                 const err = await res.json();
                 throw new Error(err.detail || "Upload failed");
             }
@@ -85,6 +142,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle Tailor Request
     tailorForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (!isAuthenticated) return showToast("Please sign in to align your resume.", "error");
+        
         const jobTitle = document.getElementById("jobTitleInput")?.value || "";
         const jobDescription = document.getElementById("jdInput")?.value || "";
 
@@ -110,6 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!res.ok) {
+                if (res.status === 401) {
+                    throw new Error("Session expired. Please sign in again.");
+                }
                 const err = await res.json();
                 throw new Error(err.detail || "Tailoring failed");
             }
@@ -151,6 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Download PDF Action
     downloadPdfBtn?.addEventListener("click", () => {
+        if (!isAuthenticated) return showToast("Please sign in to download.", "error");
         if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error");
         window.location.href = `/api/v1/tailor/download-pdf/${currentTailoredId}`;
         showToast("Generating ATS PDF download...", "info");
@@ -158,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Download Word Action
     downloadDocxBtn?.addEventListener("click", () => {
+        if (!isAuthenticated) return showToast("Please sign in to download.", "error");
         if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error");
         window.location.href = `/api/v1/tailor/download-docx/${currentTailoredId}`;
         showToast("Generating ATS Word document...", "info");

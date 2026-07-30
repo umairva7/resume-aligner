@@ -27,6 +27,16 @@
                     <span class="pulse-dot"></span>
                     <span class="status-text">AI Engine: <strong id="currentProviderLabel">Groq (Llama 3.1)</strong></span>
                 </div>
+                
+                <!-- AUTH WIDGET -->
+                <div id="authWidget" class="auth-widget" style="display: flex; align-items: center; gap: 1rem; margin-left: 1.5rem;">
+                    <button id="loginBtn" class="btn btn-sm btn-primary">Sign in with Google</button>
+                    <div id="userProfile" class="user-profile hidden" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <img id="userAvatar" src="" alt="Avatar" class="avatar-img" style="width: 32px; height: 32px; border-radius: 50%;">
+                        <span id="userName" class="user-name" style="font-size: 0.875rem; font-weight: 500; color: var(--text-color);"></span>
+                        <button id="logoutBtn" class="btn btn-sm btn-secondary-action">Logout</button>
+                    </div>
+                </div>
             </div>
         </header>
 
