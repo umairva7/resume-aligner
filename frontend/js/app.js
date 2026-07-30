@@ -168,7 +168,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     job_title: jobTitle,
-                    job_description: jobDescription
+                    job_description: jobDescription,
+                    linkedin_url: document.getElementById("linkedinInput")?.value || "",
+                    github_url: document.getElementById("githubInput")?.value || "",
+                    portfolio_url: document.getElementById("portfolioInput")?.value || null
                 })
             });
 
@@ -269,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderMarkdownToHTML(markdown) {
         if (!markdown) return "";
         let html = markdown
-            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+            .replace(/^# (.*$)/gim, '<h1 style="text-align: center; margin-bottom: 0.2rem; color: #1e293b;">$1</h1>')
             .replace(/^## (.*$)/gim, '<h2>$1</h2>')
             .replace(/^### (.*$)/gim, '### $1')
             .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
@@ -280,6 +283,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Wrap plain text lines in <p>
         return html.split('\n\n').map(p => {
             if (p.trim().startsWith('<h') || p.trim().startsWith('<ul')) return p;
+            
+            // Center align contact info line
+            if (p.includes('|') && p.includes('@')) {
+                return `<p style="text-align: center; margin-top: 0; color: #475569; font-size: 0.9rem;">${p.replace(/\n/g, '<br>')}</p>`;
+            }
             return `<p>${p.replace(/\n/g, '<br>')}</p>`;
         }).join('');
     }

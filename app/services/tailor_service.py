@@ -11,7 +11,16 @@ STRICT RULES:
 4. You MUST format your response EXACTLY as follows, using these exact delimiters:
 
 ===RESUME===
-[Your full beautifully structured Markdown resume goes here]
+# [Candidate Full Name]
+[Contact Info line separated by | (e.g. Location | Email | Phone | LinkedIn)]
+
+## PROFESSIONAL SUMMARY
+[Summary paragraph]
+
+## PROFESSIONAL EXPERIENCE
+### [Job Title]
+**[Company Name]** | [Dates]
+- [Bullet points...]
 
 ===METRICS===
 BEFORE_SCORE: [Integer 0-100]
