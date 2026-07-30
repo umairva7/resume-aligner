@@ -67,13 +67,16 @@
                             <button type="submit" id="uploadBtn" class="btn btn-secondary full-width">Upload & Extract Resume</button>
                         </form>
 
-                        <div id="activeResumeBadge" class="active-file-card hidden">
+                        <div id="activeResumeBadge" class="active-file-card hidden" style="position: relative; padding-right: 2.5rem;">
                             <div class="file-card-icon">📄</div>
                             <div class="file-card-details">
                                 <span class="file-card-name" id="activeResumeName">--</span>
                                 <span class="file-card-meta">Ready for AI Alignment</span>
                             </div>
                             <span class="status-pill">Active</span>
+                            <button type="button" id="deleteResumeBtn" class="delete-resume-btn" title="Delete Active Resume" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: transparent; border: none; font-size: 1.25rem; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; transition: background-color 0.2s;">
+                                &times;
+                            </button>
                         </div>
                     </section>
 

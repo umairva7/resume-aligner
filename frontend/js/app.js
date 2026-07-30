@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileNameDisplay = document.getElementById("fileNameDisplay");
     const activeResumeBadge = document.getElementById("activeResumeBadge");
     const activeResumeName = document.getElementById("activeResumeName");
+    const deleteResumeBtn = document.getElementById("deleteResumeBtn");
     const uploadBtn = document.getElementById("uploadBtn");
     
     const tailorForm = document.getElementById("tailorForm");
@@ -234,6 +235,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 uploadBtn.disabled = false;
                 uploadBtn.textContent = "Upload & Extract Resume";
             }
+        }
+    });
+
+    // Handle Delete Active Base Resume
+    deleteResumeBtn?.addEventListener("click", async () => {
+        if (!isAuthenticated) return showToast("Please sign in first.", "error");
+        if (!confirm("Are you sure you want to delete your active base resume? This will also remove its version history.")) return;
+        
+        try {
+            const res = await fetch("/api/v1/resume/active", {
+                method: "DELETE"
+            });
+            
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "Failed to delete resume");
+            }
+            
+            // Clear UI
+            activeResumeBadge?.classList.add("hidden");
+            if (fileNameDisplay) fileNameDisplay.textContent = "Drag & Drop Resume or Browse";
+            if (fileInput) fileInput.value = "";
+            showToast("Base resume deleted successfully.", "success");
+            
+            // Clear history list UI since it's associated with the base resume
+            if (historyList) historyList.innerHTML = `<li style="font-size: 0.85rem; color: #94a3b8; text-align: center;">No history found.</li>`;
+            
+        } catch (err) {
+            showToast("Error: " + err.message, "error");
         }
     });
 
