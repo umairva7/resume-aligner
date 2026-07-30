@@ -9,6 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const tailorForm = document.getElementById("tailorForm");
     const submitTailorBtn = document.getElementById("submitTailorBtn");
+    const historyBtn = document.getElementById("historyBtn");
+    const historyContainer = document.getElementById("historyContainer");
+    const historyList = document.getElementById("historyList");
     const temperatureRange = document.getElementById("temperatureRange");
     const tempValue = document.getElementById("tempValue");
 
@@ -104,6 +107,94 @@ document.addEventListener("DOMContentLoaded", () => {
             fileNameDisplay.textContent = e.target.files[0].name;
         }
     });
+
+    // Version History Logic
+    historyBtn?.addEventListener("click", async () => {
+        if (!isAuthenticated) return showToast("Please sign in to view history.", "error");
+        
+        // Toggle visibility
+        if (!historyContainer.classList.contains("hidden")) {
+            historyContainer.classList.add("hidden");
+            return;
+        }
+
+        historyBtn.disabled = true;
+        historyBtn.textContent = "Loading...";
+
+        try {
+            const res = await fetch("/api/v1/tailor/history");
+            if (!res.ok) throw new Error("Failed to fetch history");
+            
+            const history = await res.json();
+            
+            if (history.length === 0) {
+                historyList.innerHTML = `<li style="font-size: 0.85rem; color: #94a3b8; text-align: center;">No history found in the last 6 hours.</li>`;
+            } else {
+                historyList.innerHTML = history.map(item => `
+                    <li class="history-item" data-id="${item.id}" style="padding: 0.5rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">${item.job_title || 'Target Role'}</div>
+                        <div style="font-size: 0.75rem; color: #64748b; display: flex; justify-content: space-between; margin-top: 0.25rem;">
+                            <span>Score: ${item.after_score || '--'}%</span>
+                            <span>${new Date(item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                    </li>
+                `).join('');
+                
+                // Add click events to load history items
+                const listItems = historyList.querySelectorAll('.history-item');
+                listItems.forEach((li, index) => {
+                    li.addEventListener('click', () => {
+                        loadHistoryItem(history[index]);
+                    });
+                    li.addEventListener('mouseenter', () => li.style.borderColor = '#3b82f6');
+                    li.addEventListener('mouseleave', () => li.style.borderColor = '#e2e8f0');
+                });
+            }
+            
+            historyContainer.classList.remove("hidden");
+        } catch (err) {
+            showToast("Failed to load history.", "error");
+        } finally {
+            historyBtn.disabled = false;
+            historyBtn.innerHTML = `<span class="btn-icon">🕒</span><span class="btn-text">Version History</span>`;
+        }
+    });
+
+    function loadHistoryItem(data) {
+        currentTailoredId = data.id;
+        rawTailoredMarkdown = data.tailored_text;
+        
+        emptyState?.classList.add("hidden");
+        shimmerLoader?.classList.add("hidden");
+        
+        // Render Scores and Notes
+        if (data.before_score !== null && beforeScoreValue) {
+            beforeScoreValue.textContent = `${data.before_score}%`;
+        }
+        if (data.after_score !== null && afterScoreValue) {
+            afterScoreValue.textContent = `${data.after_score}%`;
+        }
+        if (scoresWidget) scoresWidget.classList.remove("hidden");
+        
+        if (data.analysis_note && analysisNoteText) {
+            analysisNoteText.textContent = data.analysis_note;
+            analysisNoteCard?.classList.remove("hidden");
+        } else {
+            analysisNoteCard?.classList.add("hidden");
+        }
+
+        if (renderedDocumentOutput) {
+            renderedDocumentOutput.innerHTML = renderMarkdownToHTML(rawTailoredMarkdown);
+        }
+
+        paperContent?.classList.remove("hidden");
+
+        if (downloadPdfBtn) downloadPdfBtn.disabled = false;
+        if (downloadDocxBtn) downloadDocxBtn.disabled = false;
+        if (copyBtn) copyBtn.disabled = false;
+        
+        showToast("Loaded tailored resume from history.", "success");
+    }
 
     // Handle Upload Base Resume
     uploadForm?.addEventListener("submit", async (e) => {

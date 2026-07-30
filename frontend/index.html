@@ -125,6 +125,17 @@
                                 <span class="btn-icon">⚡</span>
                                 <span class="btn-text">Tailor Resume with AI</span>
                             </button>
+
+                            <button type="button" id="historyBtn" class="btn btn-secondary full-width" style="margin-top: 0.75rem; background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+                                <span class="btn-icon">🕒</span>
+                                <span class="btn-text">Version History</span>
+                            </button>
+                            
+                            <div id="historyContainer" class="hidden" style="margin-top: 1rem; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; background: #fafafa;">
+                                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Recent Tailors (Last 6 Hours)</h4>
+                                <ul id="historyList" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                                </ul>
+                            </div>
                         </form>
                     </section>
 
@@ -198,6 +209,10 @@
                             <p id="analysisNoteText"></p>
                         </div>
                         <div id="renderedDocumentOutput" class="document-typography"></div>
+                        
+                        <div class="expiration-warning" style="text-align: center; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px dashed #cbd5e1; color: #94a3b8; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span>⏳</span> This tailored resume will be automatically permanently deleted 6 hours after creation to save storage.
+                        </div>
                     </div>
 
                 </div>

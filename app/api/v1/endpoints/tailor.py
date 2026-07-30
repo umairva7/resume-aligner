@@ -5,6 +5,8 @@ from app.api import deps
 from app.schemas.resume import TailorResumeRequest, TailoredResumeResponse
 from app.db import models
 from app.db.models import TailoredResume
+from typing import List
+from datetime import datetime, timedelta
 
 router = APIRouter()
 
@@ -23,7 +25,28 @@ async def align_resume(
             detail="No active base resume found. Upload a resume first."
         )
 
-    # 1. Check if we already generated a resume for this exact job description
+    # 1. Cleanup old records (6 hours expiration)
+    six_hours_ago = datetime.utcnow() - timedelta(hours=6)
+    db.query(TailoredResume).filter(
+        TailoredResume.base_resume_id == active_resume.id,
+        TailoredResume.created_at < six_hours_ago
+    ).delete()
+    db.commit()
+
+    # 2. Check Daily Limit (Max 3 per day)
+    start_of_today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    daily_count = db.query(TailoredResume).filter(
+        TailoredResume.base_resume_id == active_resume.id,
+        TailoredResume.created_at >= start_of_today
+    ).count()
+
+    if daily_count >= 3:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Daily limit reached. You can only tailor 3 resumes per day to save storage."
+        )
+
+    # 3. Check if we already generated a resume for this exact job description
     target_job_title = payload.job_title or "Target Position"
     existing_tailored = db.query(TailoredResume).filter(
         TailoredResume.base_resume_id == active_resume.id,
@@ -127,3 +150,28 @@ def download_tailored_docx(
         filename=clean_filename,
         headers={"Content-Disposition": f'attachment; filename="{clean_filename}"'}
     )
+
+@router.get("/history", response_model=List[TailoredResumeResponse])
+def get_tailoring_history(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user)
+):
+    """Retrieve up to the last 3 tailored resumes generated for the active base resume."""
+    repo = deps.get_resume_repository(db)
+    active_resume = repo.get_active_resume(user_id=current_user.id)
+    if not active_resume:
+        return []
+
+    # Cleanup old ones
+    six_hours_ago = datetime.utcnow() - timedelta(hours=6)
+    db.query(TailoredResume).filter(
+        TailoredResume.base_resume_id == active_resume.id,
+        TailoredResume.created_at < six_hours_ago
+    ).delete()
+    db.commit()
+
+    history = db.query(TailoredResume).filter(
+        TailoredResume.base_resume_id == active_resume.id
+    ).order_by(TailoredResume.created_at.desc()).limit(3).all()
+    
+    return history
