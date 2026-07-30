@@ -8,11 +8,15 @@ STRICT RULES:
 1. Maintain absolute truthfulness: DO NOT invent fake experiences, positions, or fake certifications.
 2. Rephrase bullet points to emphasize relevant skills, technologies, and achievements mentioned in the target job description.
 3. Optimize formatting, section headers, and keyword alignment for Applicant Tracking Systems (ATS).
-4. You MUST output ONLY a valid JSON object with exactly these keys:
-   - "tailored_resume_markdown": The complete, beautifully structured tailored resume in Markdown format.
-   - "before_score": An integer (0-100) estimating how well the ORIGINAL resume matched the job description.
-   - "after_score": An integer (0-100) estimating how well the TAILORED resume matches the job description.
-   - "analysis_note": A helpful note (string) directed to the user. For example, if the resume is very different from the job, note how their transferable skills (like problem-solving) apply. Leave empty if no note is needed.
+4. You MUST format your response EXACTLY as follows, using these exact delimiters:
+
+===RESUME===
+[Your full beautifully structured Markdown resume goes here]
+
+===METRICS===
+BEFORE_SCORE: [Integer 0-100]
+AFTER_SCORE: [Integer 0-100]
+NOTE: [Your helpful analysis note here, or leave blank if none]
 """
 
 class ResumeTailorService:
@@ -47,26 +51,23 @@ Please generate a tailored version of the candidate's resume that optimizes keyw
             user_prompt=user_prompt
         )
 
-        import json
         import re
         
-        # Try to extract JSON block if the LLM wrapped it in markdown code blocks
-        json_match = re.search(r'```(?:json)?\s*({.*?})\s*```', response_text, re.DOTALL)
-        if json_match:
-            response_text = json_match.group(1)
+        parts = response_text.split("===METRICS===")
+        resume_part = parts[0].replace("===RESUME===", "").strip()
+        metrics_part = parts[1].strip() if len(parts) > 1 else ""
+        
+        tailored_text = resume_part
+        before_score, after_score, analysis_note = None, None, None
+        
+        if metrics_part:
+            b_match = re.search(r'BEFORE_SCORE:\s*(\d+)', metrics_part)
+            a_match = re.search(r'AFTER_SCORE:\s*(\d+)', metrics_part)
+            n_match = re.search(r'NOTE:\s*(.*)', metrics_part, re.DOTALL | re.IGNORECASE)
             
-        try:
-            parsed_data = json.loads(response_text)
-            tailored_text = parsed_data.get("tailored_resume_markdown", "")
-            before_score = parsed_data.get("before_score")
-            after_score = parsed_data.get("after_score")
-            analysis_note = parsed_data.get("analysis_note")
-        except json.JSONDecodeError:
-            # Fallback if LLM failed to output JSON
-            tailored_text = response_text
-            before_score = None
-            after_score = None
-            analysis_note = None
+            if b_match: before_score = int(b_match.group(1))
+            if a_match: after_score = int(a_match.group(1))
+            if n_match: analysis_note = n_match.group(1).strip()
 
         # Save tailored record in DB
         self.repository.save_tailored_version(
