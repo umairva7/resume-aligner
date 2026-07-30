@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume Aligner - Enterprise AI Tailoring Studio</title>
-    <!-- Fonts -->
+    <meta name="description" content="Align your resume to any job description with real-time AI optimization, ATS scoring, and high-fidelity PDF/DOCX downloads.">
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="saas-layout">
-        <!-- Top Enterprise Navigation Header -->
+        <!-- Header - Modern Glass Bubble Navbar -->
         <header class="app-header">
             <div class="header-brand">
-                <div class="logo-icon">✨</div>
+                <div class="logo-icon-bubble">✨</div>
                 <div class="brand-text">
                     <span class="app-title">Resume Aligner</span>
                     <span class="app-version">v2.4 Enterprise</span>
@@ -29,11 +30,11 @@
                 </div>
                 
                 <!-- AUTH WIDGET -->
-                <div id="authWidget" class="auth-widget" style="display: flex; align-items: center; gap: 1rem; margin-left: 1.5rem;">
+                <div id="authWidget" class="auth-widget" style="display: flex; align-items: center; gap: 0.85rem;">
                     <button id="loginBtn" class="btn btn-sm btn-primary">Sign in with Google</button>
                     <div id="userProfile" class="user-profile hidden" style="display: flex; align-items: center; gap: 0.75rem;">
-                        <img id="userAvatar" src="" alt="Avatar" class="avatar-img" style="width: 32px; height: 32px; border-radius: 50%;">
-                        <span id="userName" class="user-name" style="font-size: 0.875rem; font-weight: 500; color: var(--text-color);"></span>
+                        <img id="userAvatar" src="" alt="Avatar" class="avatar-img" style="width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent-indigo);">
+                        <span id="userName" class="user-name" style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);"></span>
                         <button id="logoutBtn" class="btn btn-sm btn-secondary-action">Logout</button>
                     </div>
                 </div>
@@ -43,76 +44,86 @@
         <!-- Split Screen Main Workspace -->
         <main class="workspace-viewport">
             
-            <!-- LEFT CONTROL PANEL (40%) -->
+            <!-- LEFT CONTROL PANEL (42%) -->
             <aside class="control-panel">
                 <div class="panel-inner">
                     
-                    <!-- STEP 1: BASE RESUME SELECTION -->
+                    <!-- STEP 1: BASE RESUME SELECTION BUBBLE -->
                     <section class="panel-section">
                         <div class="section-header">
-                            <span class="step-num">1</span>
-                            <h3>Base Candidate Resume</h3>
+                            <span class="step-bubble">1</span>
+                            <h3>Base Master Resume</h3>
                         </div>
-                        <p class="section-desc">Upload your master resume. Extracted once, parsed locally.</p>
+                        <p class="section-desc">Upload your primary master resume. Extracted once, secure & local.</p>
 
                         <form id="uploadForm">
                             <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" required hidden>
-                            <label for="resumeFileInput" id="dropzoneLabel" class="enterprise-dropzone">
+                            <label for="resumeFileInput" id="dropzoneLabel" class="bubble-dropzone">
                                 <div class="dropzone-icon">📥</div>
                                 <div class="dropzone-text">
                                     <span class="primary-text" id="fileNameDisplay">Drag & Drop Resume or Browse</span>
-                                    <span class="sub-text">Supports PDF, DOCX, TXT (Max 10MB)</span>
+                                    <span class="sub-text">PDF, DOCX, TXT (Max 10MB)</span>
                                 </div>
                             </label>
                             <button type="submit" id="uploadBtn" class="btn btn-secondary full-width">Upload & Extract Resume</button>
                         </form>
 
-                        <div id="activeResumeBadge" class="active-file-card hidden" style="position: relative; padding-right: 2.5rem;">
+                        <div id="activeResumeBadge" class="active-file-card hidden">
                             <div class="file-card-icon">📄</div>
                             <div class="file-card-details">
                                 <span class="file-card-name" id="activeResumeName">--</span>
                                 <span class="file-card-meta">Ready for AI Alignment</span>
                             </div>
                             <span class="status-pill">Active</span>
-                            <button type="button" id="deleteResumeBtn" class="delete-resume-btn" title="Delete Active Resume" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: transparent; border: none; font-size: 1.25rem; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; transition: background-color 0.2s;">
+                            <button type="button" id="deleteResumeBtn" class="delete-resume-btn" title="Delete Active Resume">
                                 &times;
                             </button>
                         </div>
                     </section>
 
-                    <!-- STEP 2: TARGET JOB CONTEXT -->
+                    <!-- STEP 2: TARGET JOB CONTEXT BUBBLE -->
                     <section class="panel-section">
                         <div class="section-header">
-                            <span class="step-num">2</span>
+                            <span class="step-bubble">2</span>
                             <h3>Target Job Description</h3>
                         </div>
-                        <p class="section-desc">Provide target job title and description to align skills.</p>
+                        <p class="section-desc">Provide target role title and job posting requirements to align skills.</p>
 
                         <form id="tailorForm">
                             <div class="form-field">
                                 <label for="jobTitleInput">Target Job Title</label>
-                                <input type="text" id="jobTitleInput" placeholder="e.g. Senior Staff Backend Engineer" required>
+                                <input type="text" id="jobTitleInput" placeholder="e.g. Senior Backend Engineer" required>
                             </div>
 
                             <div class="form-field">
                                 <label for="jdInput">Job Post Description</label>
-                                <textarea id="jdInput" rows="7" placeholder="Paste the key responsibilities, required skills, and qualifications..." required></textarea>
+                                <textarea id="jdInput" rows="6" placeholder="Paste the key responsibilities, required skills, and qualifications..." required></textarea>
                             </div>
 
+                            <!-- Social Link Profiles -->
                             <div class="form-field">
-                                <label for="linkedinInput">LinkedIn URL *</label>
-                                <input type="url" id="linkedinInput" placeholder="https://linkedin.com/in/umair" required>
+                                <label for="linkedinInput">🔗 LinkedIn URL *</label>
+                                <div class="social-input-group">
+                                    <span class="social-input-icon">💼</span>
+                                    <input type="url" id="linkedinInput" placeholder="https://linkedin.com/in/umair" required>
+                                </div>
                             </div>
                             <div class="form-field">
-                                <label for="githubInput">GitHub URL *</label>
-                                <input type="url" id="githubInput" placeholder="https://github.com/umair" required>
+                                <label for="githubInput">🐙 GitHub URL *</label>
+                                <div class="social-input-group">
+                                    <span class="social-input-icon">💻</span>
+                                    <input type="url" id="githubInput" placeholder="https://github.com/umair" required>
+                                </div>
                             </div>
                             <div class="form-field">
-                                <label for="portfolioInput">Portfolio URL (Optional)</label>
-                                <input type="url" id="portfolioInput" placeholder="https://umair.dev">
+                                <label for="portfolioInput">🌐 Portfolio URL (Optional)</label>
+                                <div class="social-input-group">
+                                    <span class="social-input-icon">🚀</span>
+                                    <input type="url" id="portfolioInput" placeholder="https://umair.dev">
+                                </div>
                             </div>
 
-                            <!-- Progressive Disclosure: Advanced Options Toggle -->
+                            <!-- Advanced Options Bubble Toggle -->
                             <details class="advanced-settings">
                                 <summary class="settings-summary">⚙️ Advanced Inference Settings</summary>
                                 <div class="settings-content">
@@ -129,13 +140,13 @@
                                 <span class="btn-text">Tailor Resume with AI</span>
                             </button>
 
-                            <button type="button" id="historyBtn" class="btn btn-secondary full-width" style="margin-top: 0.75rem; background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+                            <button type="button" id="historyBtn" class="btn btn-secondary full-width" style="margin-top: 0.75rem;">
                                 <span class="btn-icon">🕒</span>
                                 <span class="btn-text">Version History</span>
                             </button>
                             
-                            <div id="historyContainer" class="hidden" style="margin-top: 1rem; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; background: #fafafa;">
-                                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Recent Tailors (Last 6 Hours)</h4>
+                            <div id="historyContainer" class="hidden" style="margin-top: 1rem; border: 1px solid var(--glass-border); border-radius: var(--radius-bubble-sm); padding: 0.85rem; background: rgba(0,0,0,0.25);">
+                                <h4 style="margin: 0 0 0.6rem 0; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Recent Tailors (Last 6 Hours)</h4>
                                 <ul id="historyList" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
                                 </ul>
                             </div>
@@ -146,23 +157,23 @@
             </aside>
 
 
-            <!-- RIGHT LIVE DOCUMENT CANVAS (60%) -->
+            <!-- RIGHT LIVE DOCUMENT CANVAS (58%) -->
             <section class="document-preview-viewport">
                 
                 <!-- CANVAS TOOLBAR -->
                 <div class="canvas-toolbar">
                     <div class="toolbar-left">
-                        <span class="canvas-title">Document Preview Canvas</span>
+                        <span class="canvas-title">Live Preview</span>
                         
-                        <!-- SCORES WIDGET -->
-                        <div id="scoresWidget" class="scores-container hidden" style="display: flex; gap: 1rem; align-items: center;">
-                            <div class="match-score-pill" style="background: #f1f5f9; color: #475569; padding: 0.35rem 0.75rem; border-radius: 100px; font-size: 0.8rem; font-weight: 500;">
-                                <span class="score-label">Original:</span>
-                                <span class="score-value" id="beforeScoreValue">--%</span>
+                        <!-- SCORES ANIMATED BUBBLE WIDGET -->
+                        <div id="scoresWidget" class="scores-container hidden">
+                            <div class="match-score-bubble score-original">
+                                <span>Before:</span>
+                                <span id="beforeScoreValue">--%</span>
                             </div>
-                            <div class="match-score-pill" style="background: #ecfdf5; color: #059669; padding: 0.35rem 0.75rem; border-radius: 100px; font-size: 0.8rem; font-weight: 600;">
-                                <span class="score-label">Tailored:</span>
-                                <span class="score-value" id="afterScoreValue">--%</span>
+                            <div class="match-score-bubble score-tailored">
+                                <span>ATS Score:</span>
+                                <span id="afterScoreValue">--%</span>
                             </div>
                         </div>
                     </div>
@@ -183,14 +194,14 @@
                 <!-- A4 / LETTER CANVAS PAPER CONTAINER -->
                 <div class="document-paper-container">
                     
-                    <!-- INITIAL EMPTY STATE -->
+                    <!-- INITIAL EMPTY STATE BUBBLE -->
                     <div id="emptyState" class="paper-empty-state">
-                        <div class="empty-icon">📑</div>
+                        <div class="empty-icon-bubble">📑</div>
                         <h3>No Tailored Resume Generated Yet</h3>
                         <p>Upload a base resume and paste a job description on the left panel to render your AI-tailored resume in real-time.</p>
                     </div>
 
-                    <!-- SHIMMER SKELETON LOADER -->
+                    <!-- SHIMMER SKELETON LOADER BUBBLE -->
                     <div id="shimmerLoader" class="shimmer-container hidden">
                         <div class="shimmer-line title-line"></div>
                         <div class="shimmer-line subtitle-line"></div>
@@ -214,7 +225,7 @@
                         <div id="renderedDocumentOutput" class="document-typography"></div>
                         
                         <div class="expiration-warning" style="text-align: center; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px dashed #cbd5e1; color: #94a3b8; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                            <span>⏳</span> This tailored resume will be automatically permanently deleted 6 hours after creation to save storage.
+                            <span>⏳</span> This tailored resume will be automatically deleted 6 hours after creation.
                         </div>
                     </div>
 
@@ -225,7 +236,7 @@
         </main>
     </div>
 
-    <!-- Notification Toast Container -->
+    <!-- Notification Toast Container for Floating Bubbles -->
     <div id="toastContainer" class="toast-container"></div>
 
     <script src="js/app.js"></script>

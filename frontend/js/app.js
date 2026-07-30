@@ -61,18 +61,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (userName) userName.textContent = user.name || user.email;
                 if (userAvatar && user.picture) userAvatar.src = user.picture;
                 
-                // Only fetch active resume if authenticated
                 fetchActiveResume();
             } else {
                 isAuthenticated = false;
                 loginBtn?.classList.remove("hidden");
                 userProfile?.classList.add("hidden");
                 
-                // Show prompt in empty state
                 if (emptyState) {
-                    emptyState.innerHTML = `<div class="empty-icon">🔒</div>
-                                            <h3>Authentication Required</h3>
-                                            <p>Please <strong>Sign in with Google</strong> using the button in the top right to upload resumes and use the AI Tailoring Studio.</p>`;
+                    emptyState.innerHTML = `
+                        <div class="empty-icon-bubble">🔒</div>
+                        <h3>Authentication Required</h3>
+                        <p>Please <strong>Sign in with Google</strong> using the header button to upload resumes and unlock the AI Alignment Studio.</p>`;
                 }
             }
         } catch (err) {
@@ -87,7 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
     logoutBtn?.addEventListener("click", async () => {
         try {
             await fetch("/api/v1/auth/logout", { method: "POST" });
-            window.location.reload();
+            showToast("Logged out successfully", "success", "Goodbye!");
+            setTimeout(() => window.location.reload(), 1000);
         } catch (err) {
             showToast("Logout failed", "error");
         }
@@ -100,20 +100,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Fetch Active Base Resume is now called inside checkAuthStatus()
-
     // File Input Display
     fileInput?.addEventListener("change", (e) => {
         if (e.target.files.length > 0 && fileNameDisplay) {
             fileNameDisplay.textContent = e.target.files[0].name;
+            showToast(`Selected file: ${e.target.files[0].name}`, "info", "File Selected");
         }
     });
 
     // Version History Logic
     historyBtn?.addEventListener("click", async () => {
-        if (!isAuthenticated) return showToast("Please sign in to view history.", "error");
+        if (!isAuthenticated) return showToast("Please sign in to view history.", "error", "Access Denied");
         
-        // Toggle visibility
         if (!historyContainer.classList.contains("hidden")) {
             historyContainer.classList.add("hidden");
             return;
@@ -129,32 +127,37 @@ document.addEventListener("DOMContentLoaded", () => {
             const history = await res.json();
             
             if (history.length === 0) {
-                historyList.innerHTML = `<li style="font-size: 0.85rem; color: #94a3b8; text-align: center;">No history found in the last 6 hours.</li>`;
+                historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">No history found in the last 6 hours.</li>`;
             } else {
                 historyList.innerHTML = history.map(item => `
-                    <li class="history-item" data-id="${item.id}" style="padding: 0.5rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
-                        <div style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">${item.job_title || 'Target Role'}</div>
-                        <div style="font-size: 0.75rem; color: #64748b; display: flex; justify-content: space-between; margin-top: 0.25rem;">
-                            <span>Score: ${item.after_score || '--'}%</span>
+                    <li class="history-item" data-id="${item.id}" style="padding: 0.65rem 0.85rem; background: var(--glass-card); border: 1px solid var(--glass-border); border-radius: var(--radius-bubble-sm); cursor: pointer; transition: all 0.25s ease;">
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">${item.job_title || 'Target Role'}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 0.35rem;">
+                            <span style="color: var(--accent-emerald); font-weight: 600;">Match Score: ${item.after_score || '--'}%</span>
                             <span>${new Date(item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                     </li>
                 `).join('');
                 
-                // Add click events to load history items
                 const listItems = historyList.querySelectorAll('.history-item');
                 listItems.forEach((li, index) => {
                     li.addEventListener('click', () => {
                         loadHistoryItem(history[index]);
                     });
-                    li.addEventListener('mouseenter', () => li.style.borderColor = '#3b82f6');
-                    li.addEventListener('mouseleave', () => li.style.borderColor = '#e2e8f0');
+                    li.addEventListener('mouseenter', () => {
+                        li.style.borderColor = 'var(--accent-indigo)';
+                        li.style.transform = 'translateX(4px)';
+                    });
+                    li.addEventListener('mouseleave', () => {
+                        li.style.borderColor = 'var(--glass-border)';
+                        li.style.transform = 'translateX(0)';
+                    });
                 });
             }
             
             historyContainer.classList.remove("hidden");
         } catch (err) {
-            showToast("Failed to load history.", "error");
+            showToast("Failed to load version history.", "error", "Fetch Error");
         } finally {
             historyBtn.disabled = false;
             historyBtn.innerHTML = `<span class="btn-icon">🕒</span><span class="btn-text">Version History</span>`;
@@ -168,12 +171,12 @@ document.addEventListener("DOMContentLoaded", () => {
         emptyState?.classList.add("hidden");
         shimmerLoader?.classList.add("hidden");
         
-        // Render Scores and Notes
+        // Render Scores with micro-animation
         if (data.before_score !== null && beforeScoreValue) {
             beforeScoreValue.textContent = `${data.before_score}%`;
         }
         if (data.after_score !== null && afterScoreValue) {
-            afterScoreValue.textContent = `${data.after_score}%`;
+            animateScoreCount(afterScoreValue, data.after_score);
         }
         if (scoresWidget) scoresWidget.classList.remove("hidden");
         
@@ -194,14 +197,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (downloadDocxBtn) downloadDocxBtn.disabled = false;
         if (copyBtn) copyBtn.disabled = false;
         
-        showToast("Loaded tailored resume from history.", "success");
+        showToast("Loaded tailored resume version.", "success", "History Loaded");
     }
 
     // Handle Upload Base Resume
     uploadForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (!isAuthenticated) return showToast("Please sign in to upload resumes.", "error");
-        if (!fileInput || !fileInput.files.length) return showToast("Please select a file to upload.", "error");
+        if (!isAuthenticated) return showToast("Please sign in to upload resumes.", "error", "Auth Required");
+        if (!fileInput || !fileInput.files.length) return showToast("Please select a file first.", "error", "No File");
 
         if (uploadBtn) {
             uploadBtn.disabled = true;
@@ -218,18 +221,16 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!res.ok) {
-                if (res.status === 401) {
-                    throw new Error("Session expired. Please sign in again.");
-                }
+                if (res.status === 401) throw new Error("Session expired. Please sign in again.");
                 const err = await res.json();
                 throw new Error(err.detail || "Upload failed");
             }
 
             const data = await res.json();
-            showToast("Base resume uploaded and extracted successfully!", "success");
+            showToast("Base resume uploaded and extracted successfully!", "success", "Upload Complete");
             displayActiveResume(data.filename);
         } catch (err) {
-            showToast("Upload Error: " + err.message, "error");
+            showToast(err.message, "error", "Upload Failed");
         } finally {
             if (uploadBtn) {
                 uploadBtn.disabled = false;
@@ -240,8 +241,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Handle Delete Active Base Resume
     deleteResumeBtn?.addEventListener("click", async () => {
-        if (!isAuthenticated) return showToast("Please sign in first.", "error");
-        if (!confirm("Are you sure you want to delete your active base resume? This will also remove its version history.")) return;
+        if (!isAuthenticated) return showToast("Please sign in first.", "error", "Auth Required");
+        if (!confirm("Are you sure you want to delete your active base resume?")) return;
         
         try {
             const res = await fetch("/api/v1/resume/active", {
@@ -253,34 +254,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(err.detail || "Failed to delete resume");
             }
             
-            // Clear UI
             activeResumeBadge?.classList.add("hidden");
             if (fileNameDisplay) fileNameDisplay.textContent = "Drag & Drop Resume or Browse";
             if (fileInput) fileInput.value = "";
-            showToast("Base resume deleted successfully.", "success");
+            showToast("Base resume deleted successfully.", "success", "Deleted");
             
-            // Clear history list UI since it's associated with the base resume
-            if (historyList) historyList.innerHTML = `<li style="font-size: 0.85rem; color: #94a3b8; text-align: center;">No history found.</li>`;
+            if (historyList) historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">No history found.</li>`;
             
         } catch (err) {
-            showToast("Error: " + err.message, "error");
+            showToast(err.message, "error", "Delete Error");
         }
     });
 
     // Handle Tailor Request
     tailorForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (!isAuthenticated) return showToast("Please sign in to align your resume.", "error");
+        if (!isAuthenticated) return showToast("Please sign in to align your resume.", "error", "Auth Required");
         
         const jobTitle = document.getElementById("jobTitleInput")?.value || "";
         const jobDescription = document.getElementById("jdInput")?.value || "";
         
-        // Prevent duplicate submissions for the exact same job description
         if (jobTitle === lastSubmittedJobTitle && jobDescription === lastSubmittedJobDesc) {
-            return showToast("You have already tailored a resume for this exact job description! The result is currently displayed.", "info");
+            return showToast("You have already tailored a resume for this job description!", "info", "Already Generated");
         }
 
-        // Show Shimmer Skeleton Loading State
         emptyState?.classList.add("hidden");
         paperContent?.classList.add("hidden");
         shimmerLoader?.classList.remove("hidden");
@@ -289,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (submitTailorBtn) {
             submitTailorBtn.disabled = true;
-            submitTailorBtn.innerHTML = `<span class="btn-icon">⏳</span><span>Aligning Resume with AI...</span>`;
+            submitTailorBtn.innerHTML = `<span class="btn-icon">⚡</span><span>Aligning Resume with AI...</span>`;
         }
 
         try {
@@ -306,9 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!res.ok) {
-                if (res.status === 401) {
-                    throw new Error("Session expired. Please sign in again.");
-                }
+                if (res.status === 401) throw new Error("Session expired. Please sign in again.");
                 const err = await res.json();
                 throw new Error(err.detail || "Tailoring failed");
             }
@@ -317,12 +312,11 @@ document.addEventListener("DOMContentLoaded", () => {
             currentTailoredId = data.id;
             rawTailoredMarkdown = data.tailored_text;
 
-            // Render Scores and Notes
             if (data.before_score !== null && beforeScoreValue) {
                 beforeScoreValue.textContent = `${data.before_score}%`;
             }
             if (data.after_score !== null && afterScoreValue) {
-                afterScoreValue.textContent = `${data.after_score}%`;
+                animateScoreCount(afterScoreValue, data.after_score);
             }
             if (scoresWidget) scoresWidget.classList.remove("hidden");
             
@@ -333,29 +327,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 analysisNoteCard?.classList.add("hidden");
             }
 
-            // Render Markdown Document inside Paper Viewport
             if (renderedDocumentOutput) {
                 renderedDocumentOutput.innerHTML = renderMarkdownToHTML(rawTailoredMarkdown);
             }
 
-            // Hide Loader, Show Paper
             shimmerLoader?.classList.add("hidden");
             paperContent?.classList.remove("hidden");
 
-            // Enable Actions
             if (downloadPdfBtn) downloadPdfBtn.disabled = false;
             if (downloadDocxBtn) downloadDocxBtn.disabled = false;
             if (copyBtn) copyBtn.disabled = false;
 
-            // Update caching state
             lastSubmittedJobTitle = jobTitle;
             lastSubmittedJobDesc = jobDescription;
 
-            showToast("Resume tailored successfully!", "success");
+            showToast("Resume tailored successfully with AI!", "success", "Alignment Complete");
         } catch (err) {
             shimmerLoader?.classList.add("hidden");
             emptyState?.classList.remove("hidden");
-            showToast("Tailor Error: " + err.message, "error");
+            showToast(err.message, "error", "Alignment Failed");
         } finally {
             if (submitTailorBtn) {
                 submitTailorBtn.disabled = false;
@@ -366,25 +356,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Download PDF Action
     downloadPdfBtn?.addEventListener("click", () => {
-        if (!isAuthenticated) return showToast("Please sign in to download.", "error");
-        if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error");
+        if (!isAuthenticated) return showToast("Please sign in to download.", "error", "Auth Required");
+        if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error", "Not Ready");
         window.location.href = `/api/v1/tailor/download-pdf/${currentTailoredId}`;
-        showToast("Generating ATS PDF download...", "info");
+        showToast("Generating ATS-compliant PDF document...", "success", "Downloading PDF");
     });
 
     // Download Word Action
     downloadDocxBtn?.addEventListener("click", () => {
-        if (!isAuthenticated) return showToast("Please sign in to download.", "error");
-        if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error");
+        if (!isAuthenticated) return showToast("Please sign in to download.", "error", "Auth Required");
+        if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error", "Not Ready");
         window.location.href = `/api/v1/tailor/download-docx/${currentTailoredId}`;
-        showToast("Generating ATS Word document...", "info");
+        showToast("Generating editable Word document...", "success", "Downloading DOCX");
     });
 
     // Copy to Clipboard Action
     copyBtn?.addEventListener("click", () => {
         if (!rawTailoredMarkdown) return;
         navigator.clipboard.writeText(rawTailoredMarkdown);
-        showToast("Tailored resume copied to clipboard!", "success");
+        showToast("Tailored resume copied to clipboard!", "success", "Copied!");
     });
 
     async function fetchActiveResume() {
@@ -402,37 +392,83 @@ document.addEventListener("DOMContentLoaded", () => {
         activeResumeBadge?.classList.remove("hidden");
     }
 
-    // Pure Markdown to HTML parser for Document Paper Viewport
+    // Micro-animation for ATS score counter
+    function animateScoreCount(element, targetScore) {
+        let current = 0;
+        const duration = 1200; // ms
+        const stepTime = 20;
+        const steps = duration / stepTime;
+        const increment = targetScore / steps;
+
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= targetScore) {
+                element.textContent = `${targetScore}%`;
+                clearInterval(timer);
+            } else {
+                element.textContent = `${Math.floor(current)}%`;
+            }
+        }, stepTime);
+    }
+
+    // Markdown to HTML renderer with interactive social link icons
     function renderMarkdownToHTML(markdown) {
         if (!markdown) return "";
         let html = markdown
-            .replace(/^# (.*$)/gim, '<h1 style="text-align: center; margin-bottom: 0.2rem; color: #1e293b;">$1</h1>')
+            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
             .replace(/^## (.*$)/gim, '<h2>$1</h2>')
             .replace(/^### (.*$)/gim, '### $1')
             .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-            .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" style="color: #3b82f6; text-decoration: none;">$1</a>')
+            .replace(/\[LinkedIn\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">💼 LinkedIn</a>')
+            .replace(/\[GitHub\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">🐙 GitHub</a>')
+            .replace(/\[Portfolio\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">🌐 Portfolio</a>')
+            .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" style="color: #2563eb; text-decoration: underline;">$1</a>')
             .replace(/^\- (.*$)/gim, '<ul><li>$1</li></ul>')
-            .replace(/<\/ul>\s*<ul>/gim, ''); // Merge consecutive ul blocks
-            
-        // Wrap plain text lines in <p>
+            .replace(/<\/ul>\s*<ul>/gim, '');
+
         return html.split('\n\n').map(p => {
             if (p.trim().startsWith('<h') || p.trim().startsWith('<ul')) return p;
             
-            // Center align contact info line
-            if (p.includes('|') && p.includes('@')) {
+            if (p.includes('|') || p.includes('LinkedIn') || p.includes('GitHub')) {
                 return `<p style="text-align: center; margin-top: 0; color: #475569; font-size: 0.9rem;">${p.replace(/\n/g, '<br>')}</p>`;
             }
             return `<p>${p.replace(/\n/g, '<br>')}</p>`;
         }).join('');
     }
 
-    function showToast(message, type = "info") {
+    // Floating Bubble Toast System
+    function showToast(message, type = "info", title = "") {
         if (!toastContainer) return alert(message);
+
         const toast = document.createElement("div");
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
+        toast.className = `toast-bubble toast-${type}`;
+        
+        let icon = "ℹ️";
+        let defaultTitle = "Notice";
+
+        if (type === "success") {
+            icon = "✓";
+            defaultTitle = "Success";
+        } else if (type === "error") {
+            icon = "✕";
+            defaultTitle = "Error";
+        }
+
+        toast.innerHTML = `
+            <div class="toast-bubble-icon">${icon}</div>
+            <div class="toast-bubble-content">
+                <span class="toast-bubble-title">${title || defaultTitle}</span>
+                <span class="toast-bubble-msg">${message}</span>
+            </div>
+        `;
+
         toastContainer.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
+
+        // Graceful slide-in & auto-dismiss with fade-out animation
+        setTimeout(() => {
+            toast.classList.add("fade-out");
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
     }
 });
