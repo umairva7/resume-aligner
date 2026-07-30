@@ -28,7 +28,7 @@
             <div class="header-actions">
                 <div class="status-indicator">
                     <span class="pulse-dot"></span>
-                    <span class="status-text">AI Engine: <strong id="currentProviderLabel">Ollama (Mistral / Local)</strong></span>
+                    <span class="status-text">AI Engine: <strong id="currentProviderLabel">Groq (Llama 3 / Cloud)</strong></span>
                 </div>
                 
                 <!-- Theme Toggle Button -->
@@ -317,6 +317,21 @@
             </section>
 
         </main>
+    </div>
+
+    <!-- Glassmorphic Theme-Aligned Custom Confirmation Modal -->
+    <div id="customConfirmModal" class="modal-overlay hidden">
+        <div class="modal-bubble-card">
+            <div class="modal-icon-badge danger">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </div>
+            <h3 id="modalTitle">Delete Base Resume?</h3>
+            <p id="modalMessage">Are you sure you want to delete your active master resume? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="modalCancelBtn" class="btn btn-secondary-action">Cancel</button>
+                <button id="modalConfirmBtn" class="btn btn-danger">Delete Resume</button>
+            </div>
+        </div>
     </div>
 
     <!-- Notification Toast Container -->

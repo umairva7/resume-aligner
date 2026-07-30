@@ -92,6 +92,43 @@ document.addEventListener("DOMContentLoaded", () => {
         showToast(`Switched to ${newTheme} mode`, "info", "Theme Preference");
     });
 
+    // Custom Glassmorphic Confirmation Modal Helper
+    function showCustomConfirm(title, message) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById("customConfirmModal");
+            const titleEl = document.getElementById("modalTitle");
+            const msgEl = document.getElementById("modalMessage");
+            const cancelBtn = document.getElementById("modalCancelBtn");
+            const confirmBtn = document.getElementById("modalConfirmBtn");
+
+            if (!modal) return resolve(window.confirm(message));
+
+            if (titleEl) titleEl.textContent = title;
+            if (msgEl) msgEl.textContent = message;
+
+            modal.classList.remove("hidden");
+
+            const cleanup = () => {
+                modal.classList.add("hidden");
+                cancelBtn.removeEventListener("click", onCancel);
+                confirmBtn.removeEventListener("click", onConfirm);
+            };
+
+            const onCancel = () => {
+                cleanup();
+                resolve(false);
+            };
+
+            const onConfirm = () => {
+                cleanup();
+                resolve(true);
+            };
+
+            cancelBtn.addEventListener("click", onCancel);
+            confirmBtn.addEventListener("click", onConfirm);
+        });
+    }
+
     // Check Auth Status on Load
     checkAuthStatus();
 
@@ -315,10 +352,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Handle Delete Active Base Resume
+    // Handle Delete Active Base Resume with Custom Glassmorphic Confirmation Modal
     deleteResumeBtn?.addEventListener("click", async () => {
         if (!isAuthenticated) return showToast("Please sign in first.", "error", "Auth Required");
-        if (!confirm("Are you sure you want to delete your active base resume?")) return;
+        
+        const confirmed = await showCustomConfirm(
+            "Delete Base Resume?",
+            "Are you sure you want to delete your active master resume? This action cannot be undone."
+        );
+        if (!confirmed) return;
         
         try {
             const res = await fetch("/api/v1/resume/active", {
@@ -357,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
         shimmerLoader?.classList.remove("hidden");
 
         submitMatchBtn.disabled = true;
-        submitMatchBtn.innerHTML = `<span>Analyzing Match with Ollama...</span>`;
+        submitMatchBtn.innerHTML = `<span>Analyzing Match with Groq...</span>`;
 
         try {
             const res = await fetch("/api/v1/tailor/analyze-match", {
@@ -441,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (submitTailorBtn) {
             submitTailorBtn.disabled = true;
-            submitTailorBtn.innerHTML = `<span>Aligning Resume with AI...</span>`;
+            submitTailorBtn.innerHTML = `<span>Aligning Resume with Groq...</span>`;
         }
 
         try {
