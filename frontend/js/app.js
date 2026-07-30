@@ -32,6 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const copyBtn = document.getElementById("copyBtn");
     const toastContainer = document.getElementById("toastContainer");
 
+    // Theme Elements
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    const sunIcon = document.getElementById("sunIcon");
+    const moonIcon = document.getElementById("moonIcon");
+
     // Auth Elements
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -46,6 +51,34 @@ document.addEventListener("DOMContentLoaded", () => {
     // Caching state to prevent duplicate requests
     let lastSubmittedJobTitle = "";
     let lastSubmittedJobDesc = "";
+
+    // Initialize Theme (Default Dark)
+    initTheme();
+
+    function initTheme() {
+        const savedTheme = localStorage.getItem("resume_aligner_theme") || "dark";
+        setTheme(savedTheme);
+    }
+
+    function setTheme(theme) {
+        if (theme === "light") {
+            document.body.setAttribute("data-theme", "light");
+            sunIcon?.classList.remove("hidden");
+            moonIcon?.classList.add("hidden");
+        } else {
+            document.body.removeAttribute("data-theme");
+            sunIcon?.classList.add("hidden");
+            moonIcon?.classList.remove("hidden");
+        }
+        localStorage.setItem("resume_aligner_theme", theme);
+    }
+
+    themeToggleBtn?.addEventListener("click", () => {
+        const currentTheme = document.body.getAttribute("data-theme") === "light" ? "light" : "dark";
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+        showToast(`Switched to ${newTheme} mode`, "info", "Theme Preference");
+    });
 
     // Check Auth Status on Load
     checkAuthStatus();
@@ -394,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Micro-animation for ATS score counter
     function animateScoreCount(element, targetScore) {
         let current = 0;
-        const duration = 1000; // ms
+        const duration = 1000;
         const stepTime = 20;
         const steps = duration / stepTime;
         const increment = targetScore / steps;
