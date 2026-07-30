@@ -91,8 +91,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 isAuthenticated = true;
                 loginBtn?.classList.add("hidden");
                 userProfile?.classList.remove("hidden");
-                if (userName) userName.textContent = user.name || user.email;
-                if (userAvatar && user.picture) userAvatar.src = user.picture;
+                const nameOrEmail = user.name || user.email || "User";
+                if (userName) userName.textContent = nameOrEmail;
+                
+                if (userAvatar) {
+                    userAvatar.onerror = () => {
+                        const initial = nameOrEmail.charAt(0).toUpperCase();
+                        userAvatar.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="16" fill="%2306b6d4"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="bold" font-size="14">${initial}</text></svg>`;
+                    };
+
+                    if (user.picture) {
+                        userAvatar.src = user.picture;
+                    } else {
+                        userAvatar.onerror();
+                    }
+                }
                 
                 fetchActiveResume();
             } else {
