@@ -69,7 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if (emptyState) {
                     emptyState.innerHTML = `
-                        <div class="empty-icon-bubble">🔒</div>
+                        <div class="empty-icon-badge">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </div>
                         <h3>Authentication Required</h3>
                         <p>Please <strong>Sign in with Google</strong> using the header button to upload resumes and unlock the AI Alignment Studio.</p>`;
                 }
@@ -86,10 +88,10 @@ document.addEventListener("DOMContentLoaded", () => {
     logoutBtn?.addEventListener("click", async () => {
         try {
             await fetch("/api/v1/auth/logout", { method: "POST" });
-            showToast("Logged out successfully", "success", "Goodbye!");
+            showToast("Logged out successfully.", "success", "Signed Out");
             setTimeout(() => window.location.reload(), 1000);
         } catch (err) {
-            showToast("Logout failed", "error");
+            showToast("Logout failed.", "error", "Error");
         }
     });
 
@@ -104,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fileInput?.addEventListener("change", (e) => {
         if (e.target.files.length > 0 && fileNameDisplay) {
             fileNameDisplay.textContent = e.target.files[0].name;
-            showToast(`Selected file: ${e.target.files[0].name}`, "info", "File Selected");
+            showToast(`Selected file: ${e.target.files[0].name}`, "info", "File Ready");
         }
     });
 
@@ -127,13 +129,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const history = await res.json();
             
             if (history.length === 0) {
-                historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">No history found in the last 6 hours.</li>`;
+                historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-secondary); text-align: center; padding: 0.5rem;">No history found in the last 6 hours.</li>`;
             } else {
                 historyList.innerHTML = history.map(item => `
-                    <li class="history-item" data-id="${item.id}" style="padding: 0.65rem 0.85rem; background: var(--glass-card); border: 1px solid var(--glass-border); border-radius: var(--radius-bubble-sm); cursor: pointer; transition: all 0.25s ease;">
-                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">${item.job_title || 'Target Role'}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 0.35rem;">
-                            <span style="color: var(--accent-emerald); font-weight: 600;">Match Score: ${item.after_score || '--'}%</span>
+                    <li class="history-item" data-id="${item.id}" style="padding: 0.65rem 0.85rem; background: var(--canvas); border: 1px solid var(--border); border-radius: var(--radius-bubble-sm); cursor: pointer; transition: all 0.2s ease;">
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">${item.job_title || 'Target Role'}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); display: flex; justify-content: space-between; margin-top: 0.35rem;">
+                            <span style="color: var(--accent-emerald); font-weight: 600;">ATS Score: ${item.after_score || '--'}%</span>
                             <span>${new Date(item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                     </li>
@@ -145,12 +147,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         loadHistoryItem(history[index]);
                     });
                     li.addEventListener('mouseenter', () => {
-                        li.style.borderColor = 'var(--accent-indigo)';
-                        li.style.transform = 'translateX(4px)';
+                        li.style.borderColor = 'var(--accent)';
                     });
                     li.addEventListener('mouseleave', () => {
-                        li.style.borderColor = 'var(--glass-border)';
-                        li.style.transform = 'translateX(0)';
+                        li.style.borderColor = 'var(--border)';
                     });
                 });
             }
@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast("Failed to load version history.", "error", "Fetch Error");
         } finally {
             historyBtn.disabled = false;
-            historyBtn.innerHTML = `<span class="btn-icon">🕒</span><span class="btn-text">Version History</span>`;
+            historyBtn.innerHTML = `<span class="btn-text">Version History</span>`;
         }
     });
 
@@ -171,7 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
         emptyState?.classList.add("hidden");
         shimmerLoader?.classList.add("hidden");
         
-        // Render Scores with micro-animation
         if (data.before_score !== null && beforeScoreValue) {
             beforeScoreValue.textContent = `${data.before_score}%`;
         }
@@ -204,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     uploadForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
         if (!isAuthenticated) return showToast("Please sign in to upload resumes.", "error", "Auth Required");
-        if (!fileInput || !fileInput.files.length) return showToast("Please select a file first.", "error", "No File");
+        if (!fileInput || !fileInput.files.length) return showToast("Please select a file first.", "error", "No File Selected");
 
         if (uploadBtn) {
             uploadBtn.disabled = true;
@@ -227,10 +226,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const data = await res.json();
-            showToast("Base resume uploaded and extracted successfully!", "success", "Upload Complete");
+            showToast("Base resume uploaded and extracted successfully.", "success", "Upload Complete");
             displayActiveResume(data.filename);
         } catch (err) {
-            showToast(err.message, "error", "Upload Failed");
+            showToast(err.message, "error", "Upload Error");
         } finally {
             if (uploadBtn) {
                 uploadBtn.disabled = false;
@@ -259,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (fileInput) fileInput.value = "";
             showToast("Base resume deleted successfully.", "success", "Deleted");
             
-            if (historyList) historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">No history found.</li>`;
+            if (historyList) historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-secondary); text-align: center; padding: 0.5rem;">No history found.</li>`;
             
         } catch (err) {
             showToast(err.message, "error", "Delete Error");
@@ -275,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const jobDescription = document.getElementById("jdInput")?.value || "";
         
         if (jobTitle === lastSubmittedJobTitle && jobDescription === lastSubmittedJobDesc) {
-            return showToast("You have already tailored a resume for this job description!", "info", "Already Generated");
+            return showToast("You have already tailored a resume for this exact job description.", "info", "Already Tailored");
         }
 
         emptyState?.classList.add("hidden");
@@ -286,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (submitTailorBtn) {
             submitTailorBtn.disabled = true;
-            submitTailorBtn.innerHTML = `<span class="btn-icon">⚡</span><span>Aligning Resume with AI...</span>`;
+            submitTailorBtn.innerHTML = `<span>Aligning Resume with AI...</span>`;
         }
 
         try {
@@ -341,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
             lastSubmittedJobTitle = jobTitle;
             lastSubmittedJobDesc = jobDescription;
 
-            showToast("Resume tailored successfully with AI!", "success", "Alignment Complete");
+            showToast("Resume tailored successfully.", "success", "Alignment Complete");
         } catch (err) {
             shimmerLoader?.classList.add("hidden");
             emptyState?.classList.remove("hidden");
@@ -349,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
             if (submitTailorBtn) {
                 submitTailorBtn.disabled = false;
-                submitTailorBtn.innerHTML = `<span class="btn-icon">⚡</span><span>Tailor Resume with AI</span>`;
+                submitTailorBtn.innerHTML = `<span>Tailor Resume with AI</span>`;
             }
         }
     });
@@ -359,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isAuthenticated) return showToast("Please sign in to download.", "error", "Auth Required");
         if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error", "Not Ready");
         window.location.href = `/api/v1/tailor/download-pdf/${currentTailoredId}`;
-        showToast("Generating ATS-compliant PDF document...", "success", "Downloading PDF");
+        showToast("Generating PDF document...", "info", "Downloading PDF");
     });
 
     // Download Word Action
@@ -367,14 +366,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isAuthenticated) return showToast("Please sign in to download.", "error", "Auth Required");
         if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error", "Not Ready");
         window.location.href = `/api/v1/tailor/download-docx/${currentTailoredId}`;
-        showToast("Generating editable Word document...", "success", "Downloading DOCX");
+        showToast("Generating Word document...", "info", "Downloading DOCX");
     });
 
     // Copy to Clipboard Action
     copyBtn?.addEventListener("click", () => {
         if (!rawTailoredMarkdown) return;
         navigator.clipboard.writeText(rawTailoredMarkdown);
-        showToast("Tailored resume copied to clipboard!", "success", "Copied!");
+        showToast("Tailored resume copied to clipboard.", "success", "Copied");
     });
 
     async function fetchActiveResume() {
@@ -395,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Micro-animation for ATS score counter
     function animateScoreCount(element, targetScore) {
         let current = 0;
-        const duration = 1200; // ms
+        const duration = 1000; // ms
         const stepTime = 20;
         const steps = duration / stepTime;
         const increment = targetScore / steps;
@@ -411,7 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, stepTime);
     }
 
-    // Markdown to HTML renderer with interactive social link icons
+    // Markdown to HTML renderer with professional badges
     function renderMarkdownToHTML(markdown) {
         if (!markdown) return "";
         let html = markdown
@@ -420,10 +419,10 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/^### (.*$)/gim, '### $1')
             .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-            .replace(/\[LinkedIn\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">💼 LinkedIn</a>')
-            .replace(/\[GitHub\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">🐙 GitHub</a>')
-            .replace(/\[Portfolio\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">🌐 Portfolio</a>')
-            .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" style="color: #2563eb; text-decoration: underline;">$1</a>')
+            .replace(/\[LinkedIn\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">LinkedIn</a>')
+            .replace(/\[GitHub\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">GitHub</a>')
+            .replace(/\[Portfolio\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">Portfolio</a>')
+            .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank" style="color: #0284c7; text-decoration: underline;">$1</a>')
             .replace(/^\- (.*$)/gim, '<ul><li>$1</li></ul>')
             .replace(/<\/ul>\s*<ul>/gim, '');
 
@@ -444,31 +443,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const toast = document.createElement("div");
         toast.className = `toast-bubble toast-${type}`;
         
-        let icon = "ℹ️";
-        let defaultTitle = "Notice";
+        let iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
         if (type === "success") {
-            icon = "✓";
-            defaultTitle = "Success";
+            iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
         } else if (type === "error") {
-            icon = "✕";
-            defaultTitle = "Error";
+            iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
         }
 
         toast.innerHTML = `
-            <div class="toast-bubble-icon">${icon}</div>
+            <div class="toast-bubble-icon">${iconSvg}</div>
             <div class="toast-bubble-content">
-                <span class="toast-bubble-title">${title || defaultTitle}</span>
+                <span class="toast-bubble-title">${title || 'Notification'}</span>
                 <span class="toast-bubble-msg">${message}</span>
             </div>
         `;
 
         toastContainer.appendChild(toast);
 
-        // Graceful slide-in & auto-dismiss with fade-out animation
         setTimeout(() => {
             toast.classList.add("fade-out");
-            setTimeout(() => toast.remove(), 400);
+            setTimeout(() => toast.remove(), 350);
         }, 4000);
     }
 });
