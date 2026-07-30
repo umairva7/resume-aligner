@@ -53,13 +53,18 @@ class ResumeRepository(BaseRepository[Resume]):
         return False
 
     def save_tailored_version(
-        self, base_resume_id: int, job_title: str, job_description_text: str, tailored_text: str, file_path: Optional[str] = None
+        self, base_resume_id: int, job_title: str, job_description_text: str, tailored_text: str, 
+        before_score: Optional[int] = None, after_score: Optional[int] = None, analysis_note: Optional[str] = None,
+        file_path: Optional[str] = None
     ) -> TailoredResume:
         tailored = TailoredResume(
             base_resume_id=base_resume_id,
             job_title=job_title,
             job_description_text=job_description_text,
             tailored_text=tailored_text,
+            before_score=before_score,
+            after_score=after_score,
+            analysis_note=analysis_note,
             file_path=file_path
         )
         self.db.add(tailored)

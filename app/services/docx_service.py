@@ -55,37 +55,32 @@ class DOCXGeneratorService:
             if line_str.startswith("# "):
                 text = line_str.lstrip("#").strip()
                 p = self._add_styled_paragraph(doc, 'Heading 1')
-                if not has_template:
-                    p.paragraph_format.space_before = Pt(0)
-                    p.paragraph_format.space_after = Pt(6)
-                self._add_formatted_runs(p, text, is_heading=True, level=1, has_template=has_template)
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(6)
+                self._add_formatted_runs(p, text, is_heading=True, level=1)
             elif line_str.startswith("## "):
                 text = line_str.lstrip("#").strip()
                 p = self._add_styled_paragraph(doc, 'Heading 2')
-                if not has_template:
-                    p.paragraph_format.space_before = Pt(12)
-                    p.paragraph_format.space_after = Pt(4)
-                self._add_formatted_runs(p, text, is_heading=True, level=2, has_template=has_template)
+                p.paragraph_format.space_before = Pt(12)
+                p.paragraph_format.space_after = Pt(4)
+                self._add_formatted_runs(p, text, is_heading=True, level=2)
             elif line_str.startswith("### "):
                 text = line_str.lstrip("#").strip()
                 p = self._add_styled_paragraph(doc, 'Heading 3')
-                if not has_template:
-                    p.paragraph_format.space_before = Pt(6)
-                    p.paragraph_format.space_after = Pt(2)
-                self._add_formatted_runs(p, text, is_heading=True, level=3, has_template=has_template)
+                p.paragraph_format.space_before = Pt(6)
+                p.paragraph_format.space_after = Pt(2)
+                self._add_formatted_runs(p, text, is_heading=True, level=3)
             elif line_str.startswith("- ") or line_str.startswith("* "):
                 text = line_str[2:].strip()
                 p = self._add_styled_paragraph(doc, 'List Bullet')
-                if not has_template:
-                    p.paragraph_format.space_before = Pt(0)
-                    p.paragraph_format.space_after = Pt(3)
-                self._add_formatted_runs(p, text, has_template=has_template)
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(3)
+                self._add_formatted_runs(p, text)
             else:
                 p = self._add_styled_paragraph(doc, 'Normal')
-                if not has_template:
-                    p.paragraph_format.space_before = Pt(0)
-                    p.paragraph_format.space_after = Pt(4)
-                self._add_formatted_runs(p, line_str, has_template=has_template)
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(4)
+                self._add_formatted_runs(p, line_str)
 
         doc.save(str(output_path))
         return output_path
@@ -96,7 +91,7 @@ class DOCXGeneratorService:
         except KeyError:
             return doc.add_paragraph()
 
-    def _add_formatted_runs(self, paragraph, text: str, is_heading: bool = False, level: int = 0, has_template: bool = False):
+    def _add_formatted_runs(self, paragraph, text: str, is_heading: bool = False, level: int = 0):
         """Parse basic **bold** tags and add formatted runs to docx paragraph."""
         tokens = re.split(r'(\*\*.*?\*\*)', text)
         for token in tokens:
@@ -114,20 +109,19 @@ class DOCXGeneratorService:
             if is_bold:
                 run.bold = True
                 
-            if not has_template:
-                # Apply hardcoded styles if no template is used
-                run.font.name = 'Calibri'
-                if is_heading:
-                    run.bold = True
-                    if level == 1:
-                        run.font.size = Pt(18)
-                        run.font.color.rgb = RGBColor(0x1E, 0x29, 0x3B)
-                    elif level == 2:
-                        run.font.size = Pt(13)
-                        run.font.color.rgb = RGBColor(0x25, 0x63, 0xEB)
-                    elif level == 3:
-                        run.font.size = Pt(11)
-                        run.font.color.rgb = RGBColor(0x0F, 0x17, 0x2A)
-                else:
-                    run.font.size = Pt(10)
-                    run.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
+            # Apply hardcoded professional ATS styles to ensure perfect output formatting
+            run.font.name = 'Calibri'
+            if is_heading:
+                run.bold = True
+                if level == 1:
+                    run.font.size = Pt(18)
+                    run.font.color.rgb = RGBColor(0x1E, 0x29, 0x3B)
+                elif level == 2:
+                    run.font.size = Pt(13)
+                    run.font.color.rgb = RGBColor(0x25, 0x63, 0xEB)
+                elif level == 3:
+                    run.font.size = Pt(11)
+                    run.font.color.rgb = RGBColor(0x0F, 0x17, 0x2A)
+            else:
+                run.font.size = Pt(10)
+                run.font.color.rgb = RGBColor(0x33, 0x41, 0x55)

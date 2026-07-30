@@ -28,6 +28,9 @@ class TailoredResumeResponse(BaseModel):
     base_resume_id: int
     job_title: Optional[str]
     tailored_text: str
+    before_score: Optional[int]
+    after_score: Optional[int]
+    analysis_note: Optional[str]
     created_at: datetime
 
     class Config:

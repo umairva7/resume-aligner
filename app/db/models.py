@@ -51,6 +51,9 @@ class TailoredResume(Base):
     job_title: Mapped[str] = mapped_column(String(255), nullable=True)
     job_description_text: Mapped[str] = mapped_column(Text, nullable=False)
     tailored_text: Mapped[str] = mapped_column(Text, nullable=False)
+    before_score: Mapped[int] = mapped_column(Integer, nullable=True)
+    after_score: Mapped[int] = mapped_column(Integer, nullable=True)
+    analysis_note: Mapped[str] = mapped_column(Text, nullable=True)
     file_path: Mapped[str] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 

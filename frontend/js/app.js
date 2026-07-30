@@ -17,8 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const paperContent = document.getElementById("paperContent");
     const renderedDocumentOutput = document.getElementById("renderedDocumentOutput");
     
-    const matchScoreWidget = document.getElementById("matchScoreWidget");
-    const matchScoreValue = document.getElementById("matchScoreValue");
+    const scoresWidget = document.getElementById("scoresWidget");
+    const beforeScoreValue = document.getElementById("beforeScoreValue");
+    const afterScoreValue = document.getElementById("afterScoreValue");
+    const analysisNoteCard = document.getElementById("analysisNoteCard");
+    const analysisNoteText = document.getElementById("analysisNoteText");
     
     const downloadPdfBtn = document.getElementById("downloadPdfBtn");
     const downloadDocxBtn = document.getElementById("downloadDocxBtn");
@@ -147,11 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const jobTitle = document.getElementById("jobTitleInput")?.value || "";
         const jobDescription = document.getElementById("jdInput")?.value || "";
 
-        // Show Shimmer Skeleton Loading State (defensive optional chaining)
+        // Show Shimmer Skeleton Loading State
         emptyState?.classList.add("hidden");
         paperContent?.classList.add("hidden");
         shimmerLoader?.classList.remove("hidden");
-        matchScoreWidget?.classList.add("hidden");
+        scoresWidget?.classList.add("hidden");
+        analysisNoteCard?.classList.add("hidden");
 
         if (submitTailorBtn) {
             submitTailorBtn.disabled = true;
@@ -180,9 +184,21 @@ document.addEventListener("DOMContentLoaded", () => {
             currentTailoredId = data.id;
             rawTailoredMarkdown = data.tailored_text;
 
-            // Calculate ATS Match Score
-            const score = calculateATSScore(jobDescription, rawTailoredMarkdown);
-            renderATSScore(score);
+            // Render Scores and Notes
+            if (data.before_score !== null && beforeScoreValue) {
+                beforeScoreValue.textContent = `${data.before_score}%`;
+            }
+            if (data.after_score !== null && afterScoreValue) {
+                afterScoreValue.textContent = `${data.after_score}%`;
+            }
+            if (scoresWidget) scoresWidget.classList.remove("hidden");
+            
+            if (data.analysis_note && analysisNoteText) {
+                analysisNoteText.textContent = data.analysis_note;
+                analysisNoteCard?.classList.remove("hidden");
+            } else {
+                analysisNoteCard?.classList.add("hidden");
+            }
 
             // Render Markdown Document inside Paper Viewport
             if (renderedDocumentOutput) {
@@ -247,34 +263,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function displayActiveResume(filename) {
         if (activeResumeName) activeResumeName.textContent = filename;
         activeResumeBadge?.classList.remove("hidden");
-    }
-
-    // ATS Match Score Calculator Widget
-    function calculateATSScore(jdText, tailoredText) {
-        if (!jdText || !tailoredText) return 85;
-        const stopwords = new Set(["and", "the", "with", "for", "that", "this", "from", "have", "you", "your", "are", "will", "our"]);
-        const extractKeywords = (str) => {
-            return (str.toLowerCase().match(/\b[a-z]{3,}\b/g) || [])
-                .filter(w => !stopwords.has(w));
-        };
-
-        const jdWords = Array.from(new Set(extractKeywords(jdText)));
-        const tailoredWords = new Set(extractKeywords(tailoredText));
-
-        if (jdWords.length === 0) return 90;
-
-        let matched = 0;
-        jdWords.forEach(word => {
-            if (tailoredWords.has(word)) matched++;
-        });
-
-        const percentage = Math.round((matched / jdWords.length) * 100);
-        return Math.min(Math.max(percentage + 20, 78), 98); // Baseline score range
-    }
-
-    function renderATSScore(score) {
-        if (matchScoreValue) matchScoreValue.textContent = `${score}%`;
-        matchScoreWidget?.classList.remove("hidden");
     }
 
     // Pure Markdown to HTML parser for Document Paper Viewport
