@@ -60,3 +60,22 @@ def get_active_resume(
             detail="No active base resume found. Please upload one first."
         )
     return resume
+
+@router.delete("/active", status_code=status.HTTP_204_NO_CONTENT)
+def delete_active_resume(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user)
+):
+    """Delete the currently active base resume."""
+    repo = deps.get_resume_repository(db)
+    resume = repo.get_active_resume(user_id=current_user.id)
+    if not resume:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No active base resume found."
+        )
+    
+    # We should delete the record
+    db.delete(resume)
+    db.commit()
+    return None
