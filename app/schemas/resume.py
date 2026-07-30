@@ -38,3 +38,24 @@ class TailoredResumeResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# --- Match Analyzer Schemas ---
+class MatchAnalysisRequest(BaseModel):
+    job_title: Optional[str] = "Target Role"
+    job_description: str
+
+
+class MatchAnalysisResponse(BaseModel):
+    id: Optional[int] = None
+    status: str = "success"
+    match_score: int
+    skills_matched: List[str]
+    skills_missing: List[str]
+    keywords_found: int
+    keywords_total: int
+    recommendations: List[str]
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

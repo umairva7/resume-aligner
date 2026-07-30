@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const uploadBtn = document.getElementById("uploadBtn");
     
     const tailorForm = document.getElementById("tailorForm");
+    const submitMatchBtn = document.getElementById("submitMatchBtn");
     const submitTailorBtn = document.getElementById("submitTailorBtn");
     const historyBtn = document.getElementById("historyBtn");
     const historyContainer = document.getElementById("historyContainer");
@@ -16,11 +17,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const temperatureRange = document.getElementById("temperatureRange");
     const tempValue = document.getElementById("tempValue");
 
+    // Canvas & View Containers
     const emptyState = document.getElementById("emptyState");
     const shimmerLoader = document.getElementById("shimmerLoader");
     const paperContent = document.getElementById("paperContent");
     const renderedDocumentOutput = document.getElementById("renderedDocumentOutput");
+    const matchAnalysisCard = document.getElementById("matchAnalysisCard");
     
+    // Feature 1 Match Analyzer Elements
+    const matchGaugeValue = document.getElementById("matchGaugeValue");
+    const keywordsText = document.getElementById("keywordsText");
+    const matchProgressBar = document.getElementById("matchProgressBar");
+    const skillsMatchedContainer = document.getElementById("skillsMatchedContainer");
+    const skillsMissingContainer = document.getElementById("skillsMissingContainer");
+    const recommendationsList = document.getElementById("recommendationsList");
+
+    // Tab buttons
+    const tabMatchBtn = document.getElementById("tabMatchBtn");
+    const tabTailorBtn = document.getElementById("tabTailorBtn");
+
     const scoresWidget = document.getElementById("scoresWidget");
     const beforeScoreValue = document.getElementById("beforeScoreValue");
     const afterScoreValue = document.getElementById("afterScoreValue");
@@ -47,11 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentTailoredId = null;
     let rawTailoredMarkdown = "";
     let isAuthenticated = false;
+    let currentAnalysisData = null;
     
-    // Caching state to prevent duplicate requests
-    let lastSubmittedJobTitle = "";
-    let lastSubmittedJobDesc = "";
-
     // Initialize Theme (Default Dark)
     initTheme();
 
@@ -141,6 +153,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // View Tabs Switching Logic
+    tabMatchBtn?.addEventListener("click", () => {
+        tabMatchBtn.classList.add("active");
+        tabTailorBtn?.classList.remove("active");
+        
+        if (currentAnalysisData) {
+            emptyState?.classList.add("hidden");
+            paperContent?.classList.add("hidden");
+            matchAnalysisCard?.classList.remove("hidden");
+        }
+    });
+
+    tabTailorBtn?.addEventListener("click", () => {
+        tabTailorBtn.classList.add("active");
+        tabMatchBtn?.classList.remove("active");
+
+        if (rawTailoredMarkdown) {
+            emptyState?.classList.add("hidden");
+            matchAnalysisCard?.classList.add("hidden");
+            paperContent?.classList.remove("hidden");
+        }
+    });
+
     // Temperature slider update
     if (temperatureRange && tempValue) {
         temperatureRange.addEventListener("input", (e) => {
@@ -175,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const history = await res.json();
             
             if (history.length === 0) {
-                historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-secondary); text-align: center; padding: 0.5rem;">No history found in the last 6 hours.</li>`;
+                historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-secondary); text-align: center; padding: 0.5rem;">No history found.</li>`;
             } else {
                 historyList.innerHTML = history.map(item => `
                     <li class="history-item" data-id="${item.id}" style="padding: 0.65rem 0.85rem; background: var(--canvas); border: 1px solid var(--border); border-radius: var(--radius-bubble-sm); cursor: pointer; transition: all 0.2s ease;">
@@ -191,12 +226,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 listItems.forEach((li, index) => {
                     li.addEventListener('click', () => {
                         loadHistoryItem(history[index]);
-                    });
-                    li.addEventListener('mouseenter', () => {
-                        li.style.borderColor = 'var(--accent)';
-                    });
-                    li.addEventListener('mouseleave', () => {
-                        li.style.borderColor = 'var(--border)';
                     });
                 });
             }
@@ -216,6 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         emptyState?.classList.add("hidden");
         shimmerLoader?.classList.add("hidden");
+        matchAnalysisCard?.classList.add("hidden");
         
         if (data.before_score !== null && beforeScoreValue) {
             beforeScoreValue.textContent = `${data.before_score}%`;
@@ -236,6 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderedDocumentOutput.innerHTML = renderMarkdownToHTML(rawTailoredMarkdown);
         }
 
+        tabTailorBtn?.click();
         paperContent?.classList.remove("hidden");
 
         if (downloadPdfBtn) downloadPdfBtn.disabled = false;
@@ -304,14 +335,96 @@ document.addEventListener("DOMContentLoaded", () => {
             if (fileInput) fileInput.value = "";
             showToast("Base resume deleted successfully.", "success", "Deleted");
             
-            if (historyList) historyList.innerHTML = `<li style="font-size: 0.82rem; color: var(--text-secondary); text-align: center; padding: 0.5rem;">No history found.</li>`;
-            
         } catch (err) {
             showToast(err.message, "error", "Delete Error");
         }
     });
 
-    // Handle Tailor Request
+    // FEATURE 1: HANDLE MATCH ANALYZER REQUEST
+    submitMatchBtn?.addEventListener("click", async () => {
+        if (!isAuthenticated) return showToast("Please sign in to run match analysis.", "error", "Auth Required");
+        
+        const jobTitle = document.getElementById("jobTitleInput")?.value || "Target Position";
+        const jobDescription = document.getElementById("jdInput")?.value || "";
+
+        if (!jobDescription.trim()) {
+            return showToast("Please enter a target job description.", "error", "Missing Description");
+        }
+
+        emptyState?.classList.add("hidden");
+        paperContent?.classList.add("hidden");
+        matchAnalysisCard?.classList.add("hidden");
+        shimmerLoader?.classList.remove("hidden");
+
+        submitMatchBtn.disabled = true;
+        submitMatchBtn.innerHTML = `<span>Analyzing Match with Ollama...</span>`;
+
+        try {
+            const res = await fetch("/api/v1/tailor/analyze-match", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    job_title: jobTitle,
+                    job_description: jobDescription
+                })
+            });
+
+            if (!res.ok) {
+                if (res.status === 401) throw new Error("Session expired. Please sign in again.");
+                const err = await res.json();
+                throw new Error(err.detail || "Match analysis failed");
+            }
+
+            const data = await res.json();
+            currentAnalysisData = data;
+
+            renderMatchAnalysisCard(data);
+
+            shimmerLoader?.classList.add("hidden");
+            tabMatchBtn?.click();
+            matchAnalysisCard?.classList.remove("hidden");
+
+            showToast(`Match score computed: ${data.match_score}%`, "success", "Analysis Complete");
+        } catch (err) {
+            shimmerLoader?.classList.add("hidden");
+            emptyState?.classList.remove("hidden");
+            showToast(err.message, "error", "Analysis Failed");
+        } finally {
+            submitMatchBtn.disabled = false;
+            submitMatchBtn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <span>Feature 1: Match Score Analyzer</span>`;
+        }
+    });
+
+    function renderMatchAnalysisCard(data) {
+        if (matchGaugeValue) matchGaugeValue.textContent = `${data.match_score}%`;
+        if (keywordsText) keywordsText.textContent = `${data.keywords_found} / ${data.keywords_total} Keywords Found`;
+        if (matchProgressBar) matchProgressBar.style.width = `${data.match_score}%`;
+
+        // Render Matched Skills Badges
+        if (skillsMatchedContainer) {
+            skillsMatchedContainer.innerHTML = (data.skills_matched || []).map(skill => 
+                `<span class="skill-badge matched">${skill}</span>`
+            ).join('');
+        }
+
+        // Render Missing Skills Badges
+        if (skillsMissingContainer) {
+            skillsMissingContainer.innerHTML = (data.skills_missing || []).map(skill => 
+                `<span class="skill-badge missing">${skill}</span>`
+            ).join('');
+        }
+
+        // Render Recommendations List
+        if (recommendationsList) {
+            recommendationsList.innerHTML = (data.recommendations || []).map(rec => 
+                `<li>${rec}</li>`
+            ).join('');
+        }
+    }
+
+    // FEATURE 2: HANDLE TAILOR REQUEST
     tailorForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
         if (!isAuthenticated) return showToast("Please sign in to align your resume.", "error", "Auth Required");
@@ -319,12 +432,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const jobTitle = document.getElementById("jobTitleInput")?.value || "";
         const jobDescription = document.getElementById("jdInput")?.value || "";
         
-        if (jobTitle === lastSubmittedJobTitle && jobDescription === lastSubmittedJobDesc) {
-            return showToast("You have already tailored a resume for this exact job description.", "info", "Already Tailored");
-        }
-
         emptyState?.classList.add("hidden");
         paperContent?.classList.add("hidden");
+        matchAnalysisCard?.classList.add("hidden");
         shimmerLoader?.classList.remove("hidden");
         scoresWidget?.classList.add("hidden");
         analysisNoteCard?.classList.add("hidden");
@@ -377,14 +487,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             shimmerLoader?.classList.add("hidden");
+            tabTailorBtn?.click();
             paperContent?.classList.remove("hidden");
 
             if (downloadPdfBtn) downloadPdfBtn.disabled = false;
             if (downloadDocxBtn) downloadDocxBtn.disabled = false;
             if (copyBtn) copyBtn.disabled = false;
-
-            lastSubmittedJobTitle = jobTitle;
-            lastSubmittedJobDesc = jobDescription;
 
             showToast("Resume tailored successfully.", "success", "Alignment Complete");
         } catch (err) {
@@ -394,7 +502,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
             if (submitTailorBtn) {
                 submitTailorBtn.disabled = false;
-                submitTailorBtn.innerHTML = `<span>Tailor Resume with AI</span>`;
+                submitTailorBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <span>Feature 2: Tailor Resume with AI</span>`;
             }
         }
     });

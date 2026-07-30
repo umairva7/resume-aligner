@@ -42,6 +42,9 @@ class Resume(Base):
     tailored_versions: Mapped[list["TailoredResume"]] = relationship(
         "TailoredResume", back_populates="base_resume", cascade="all, delete-orphan"
     )
+    match_analyses: Mapped[list["MatchAnalysis"]] = relationship(
+        "MatchAnalysis", back_populates="base_resume", cascade="all, delete-orphan"
+    )
 
 class TailoredResume(Base):
     __tablename__ = "tailored_resumes"
@@ -58,3 +61,21 @@ class TailoredResume(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     base_resume: Mapped["Resume"] = relationship("Resume", back_populates="tailored_versions")
+
+class MatchAnalysis(Base):
+    __tablename__ = "match_analyses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    base_resume_id: Mapped[int] = mapped_column(Integer, ForeignKey("resumes.id"), nullable=False)
+    resume_hash: Mapped[str] = mapped_column(String(255), nullable=True)
+    job_title: Mapped[str] = mapped_column(String(255), nullable=True)
+    job_description_text: Mapped[str] = mapped_column(Text, nullable=False)
+    match_score: Mapped[int] = mapped_column(Integer, nullable=False)
+    skills_matched: Mapped[str] = mapped_column(Text, nullable=True)  # Stored as JSON string
+    skills_missing: Mapped[str] = mapped_column(Text, nullable=True)  # Stored as JSON string
+    keywords_found: Mapped[int] = mapped_column(Integer, nullable=True)
+    keywords_total: Mapped[int] = mapped_column(Integer, nullable=True)
+    recommendations: Mapped[str] = mapped_column(Text, nullable=True)  # Stored as JSON string
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    base_resume: Mapped["Resume"] = relationship("Resume", back_populates="match_analyses")

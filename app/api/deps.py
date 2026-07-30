@@ -10,6 +10,7 @@ from app.services.parser_service import ResumeParserService
 from app.services.storage_service import StorageService
 from app.services.llm_service import BaseLLMProvider, OllamaLLMProvider, MockLLMProvider, GeminiLLMProvider, GroqLLMProvider, HuggingFaceLLMProvider
 from app.services.tailor_service import ResumeTailorService
+from app.services.match_service import MatchAnalyzerService
 
 from app.services.pdf_service import PDFGeneratorService
 from app.services.docx_service import DOCXGeneratorService
@@ -21,9 +22,7 @@ def get_db() -> Generator[Session, None, None]:
     finally:
         db.close()
 
-def get_resume_repository(db: Session = None) -> ResumeRepository:
-    if db is None:
-        db = next(get_db())
+def get_resume_repository(db: Session = Depends(get_db)) -> ResumeRepository:
     return ResumeRepository(db)
 
 def get_parser_service() -> ResumeParserService:
@@ -52,14 +51,18 @@ def get_llm_provider() -> BaseLLMProvider:
         return MockLLMProvider()
 
 def get_tailor_service(
-    llm: BaseLLMProvider = None,
-    repo: ResumeRepository = None
+    db: Session = Depends(get_db)
 ) -> ResumeTailorService:
-    if llm is None:
-        llm = get_llm_provider()
-    if repo is None:
-        repo = get_resume_repository()
+    llm = get_llm_provider()
+    repo = ResumeRepository(db)
     return ResumeTailorService(llm_provider=llm, repository=repo)
+
+def get_match_service(
+    db: Session = Depends(get_db)
+) -> MatchAnalyzerService:
+    llm = get_llm_provider()
+    repo = ResumeRepository(db)
+    return MatchAnalyzerService(llm_provider=llm, repository=repo)
 
 def get_current_user_optional(request: Request, db: Session = Depends(get_db)) -> Optional[models.User]:
     session_token = request.cookies.get("session_token")
@@ -71,7 +74,6 @@ def get_current_user_optional(request: Request, db: Session = Depends(get_db)) -
         return None
         
     if user_session.expires_at < datetime.utcnow():
-        # Session expired
         db.delete(user_session)
         db.commit()
         return None

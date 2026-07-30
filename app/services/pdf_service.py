@@ -11,7 +11,7 @@ class PDFGeneratorService:
     """
     OOP Service for compiling Markdown-formatted resumes into ATS-compliant PDFs.
     Ensures clean single-column structure, standard fonts, parseable text streams,
-    and professional typography.
+    pure black headings, and clickable hyperlinks for LinkedIn, GitHub, and Portfolio.
     """
 
     def create_ats_pdf(self, markdown_text: str, filename_prefix: str = "tailored_resume") -> Path:
@@ -30,24 +30,36 @@ class PDFGeneratorService:
 
         styles = getSampleStyleSheet()
 
-        # Custom ATS-Friendly Styles
+        # Custom ATS-Friendly Styles with Pure Black Headings (#000000)
         title_style = ParagraphStyle(
             'ATSTitle',
             parent=styles['Heading1'],
             fontName='Helvetica-Bold',
             fontSize=18,
             leading=22,
+            textColor=colors.HexColor('#000000'),
+            alignment=1, # Center aligned title
+            spaceAfter=4
+        )
+
+        subtitle_style = ParagraphStyle(
+            'ATSSubtitle',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=9.5,
+            leading=13.5,
             textColor=colors.HexColor('#1E293B'),
-            spaceAfter=6
+            alignment=1, # Center aligned contact info
+            spaceAfter=8
         )
 
         h2_style = ParagraphStyle(
             'ATSH2',
             parent=styles['Heading2'],
             fontName='Helvetica-Bold',
-            fontSize=13,
+            fontSize=12.5,
             leading=16,
-            textColor=colors.HexColor('#2563EB'),
+            textColor=colors.HexColor('#000000'), # Pure Black
             spaceBefore=10,
             spaceAfter=4,
             keepWithNext=True
@@ -59,7 +71,7 @@ class PDFGeneratorService:
             fontName='Helvetica-Bold',
             fontSize=10.5,
             leading=14,
-            textColor=colors.HexColor('#0F172A'),
+            textColor=colors.HexColor('#000000'), # Pure Black
             spaceBefore=4,
             spaceAfter=2,
             keepWithNext=True
@@ -71,7 +83,7 @@ class PDFGeneratorService:
             fontName='Helvetica',
             fontSize=9.5,
             leading=13.5,
-            textColor=colors.HexColor('#334155'),
+            textColor=colors.HexColor('#1E293B'),
             spaceAfter=4
         )
 
@@ -91,17 +103,17 @@ class PDFGeneratorService:
             if not line_str:
                 continue
 
-            # Convert markdown formatting (**bold**, *italic*) to HTML tags for ReportLab Paragraph
+            # Convert markdown formatting & clickable links to HTML tags for ReportLab Paragraph
             line_html = self._convert_markdown_to_html(line_str)
 
             if line_str.startswith("# "):
                 text = line_html.lstrip("#").strip()
                 story.append(Paragraph(text, title_style))
-                story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#CBD5E1"), spaceAfter=8))
+                story.append(HRFlowable(width="100%", thickness=1.2, color=colors.HexColor("#000000"), spaceAfter=6))
             elif line_str.startswith("## "):
                 text = line_html.lstrip("#").strip()
                 story.append(Paragraph(text, h2_style))
-                story.append(HRFlowable(width="100%", thickness=0.75, color=colors.HexColor("#E2E8F0"), spaceAfter=6))
+                story.append(HRFlowable(width="100%", thickness=0.75, color=colors.HexColor("#000000"), spaceAfter=6))
             elif line_str.startswith("### "):
                 text = line_html.lstrip("#").strip()
                 story.append(Paragraph(text, h3_style))
@@ -112,13 +124,19 @@ class PDFGeneratorService:
                 text = re.sub(r'^\d+\.\s', '', line_html)
                 story.append(Paragraph(text, bullet_style))
             else:
-                story.append(Paragraph(line_html, body_style))
+                # Check if it's the contact line (containing '|' or social/email keywords)
+                if "|" in line_str and ("LinkedIn" in line_str or "GitHub" in line_str or "@" in line_str or "http" in line_str):
+                    story.append(Paragraph(line_html, subtitle_style))
+                else:
+                    story.append(Paragraph(line_html, body_style))
 
         doc.build(story)
         return output_path
 
     def _convert_markdown_to_html(self, text: str) -> str:
-        """Helper to translate basic markdown syntax to ReportLab Paragraph markup."""
+        """Translate markdown syntax and links to ReportLab Paragraph markup."""
+        # Convert markdown links [Label](url) to clickable ReportLab <a href="url"><u><font color="#0284c7">Label</font></u></a>
+        text = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2"><font color="#0284c7"><u>\1</u></font></a>', text)
         # Convert **bold** to <b>bold</b>
         text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
         # Convert *italic* or _italic_ to <i>italic</i>

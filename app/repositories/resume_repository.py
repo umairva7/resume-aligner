@@ -1,7 +1,8 @@
+import json
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from app.repositories.base_repository import BaseRepository
-from app.db.models import Resume, TailoredResume
+from app.db.models import Resume, TailoredResume, MatchAnalysis
 
 class ResumeRepository(BaseRepository[Resume]):
     def __init__(self, db: Session):
@@ -26,7 +27,6 @@ class ResumeRepository(BaseRepository[Resume]):
         return query.offset(skip).limit(limit).all()
 
     def create(self, filename: str, file_path: str, extracted_text: str, user_id: Optional[int] = None) -> Resume:
-        # Deactivate previous resumes if single active resume policy
         query = self.db.query(Resume)
         if user_id:
             query = query.filter(Resume.user_id == user_id)
@@ -71,3 +71,25 @@ class ResumeRepository(BaseRepository[Resume]):
         self.db.commit()
         self.db.refresh(tailored)
         return tailored
+
+    def save_match_analysis(
+        self, base_resume_id: int, resume_hash: str, job_title: str, job_description_text: str,
+        match_score: int, skills_matched: list, skills_missing: list,
+        keywords_found: int, keywords_total: int, recommendations: list
+    ) -> MatchAnalysis:
+        analysis = MatchAnalysis(
+            base_resume_id=base_resume_id,
+            resume_hash=resume_hash,
+            job_title=job_title,
+            job_description_text=job_description_text,
+            match_score=match_score,
+            skills_matched=json.dumps(skills_matched),
+            skills_missing=json.dumps(skills_missing),
+            keywords_found=keywords_found,
+            keywords_total=keywords_total,
+            recommendations=json.dumps(recommendations)
+        )
+        self.db.add(analysis)
+        self.db.commit()
+        self.db.refresh(analysis)
+        return analysis
