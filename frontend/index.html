@@ -115,12 +115,24 @@
                     <button type="button" id="switchModeBtn" class="switch-mode-btn">Switch</button>
                 </div>
 
-                <!-- Daily Feature Lives Widget -->
+                <!-- Daily Feature Credits Widget -->
                 <div id="dailyLivesWidget" class="daily-lives-widget hidden" title="Daily Feature Usage & Reset Countdown">
-                    <span class="widget-label">⚡ Daily Lives:</span>
-                    <span id="matchLivesPill" class="lives-pill match-pill">💙 Match: <strong id="matchLivesCount">5/5</strong></span>
-                    <span id="tailorLivesPill" class="lives-pill tailor-pill">✨ Tailor: <strong id="tailorLivesCount">5/5</strong></span>
-                    <span id="resetTimerPill" class="reset-timer-pill hidden">⏳ <span id="resetTimerText">Resets in 23h 59m</span></span>
+                    <span class="widget-label" style="display: flex; align-items: center; gap: 0.35rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        Credits:
+                    </span>
+                    <span id="matchLivesPill" class="lives-pill match-pill">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Match: <strong id="matchLivesCount">5/5</strong>
+                    </span>
+                    <span id="tailorLivesPill" class="lives-pill tailor-pill">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        Tailor: <strong id="tailorLivesCount">5/5</strong>
+                    </span>
+                    <span id="resetTimerPill" class="reset-timer-pill hidden">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span id="resetTimerText">Resets in 23h 59m</span>
+                    </span>
                 </div>
 
                 <div class="status-indicator">
