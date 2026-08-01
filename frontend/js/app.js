@@ -129,6 +129,46 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Custom Glassmorphic Alert Modal Helper
+    function showCustomAlert(title, message, type = "error") {
+        return new Promise((resolve) => {
+            const modal = document.getElementById("customAlertModal");
+            const iconBadge = document.getElementById("alertIconBadge");
+            const titleEl = document.getElementById("alertModalTitle");
+            const msgEl = document.getElementById("alertModalMessage");
+            const okBtn = document.getElementById("alertModalOkBtn");
+
+            if (!modal) {
+                showToast(message, type, title);
+                return resolve();
+            }
+
+            if (titleEl) titleEl.textContent = title;
+            if (msgEl) msgEl.textContent = message;
+
+            if (iconBadge) {
+                iconBadge.className = `modal-icon-badge ${type}`;
+                if (type === "error") {
+                    iconBadge.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+                } else if (type === "success") {
+                    iconBadge.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                } else {
+                    iconBadge.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+                }
+            }
+
+            modal.classList.remove("hidden");
+
+            const onDismiss = () => {
+                modal.classList.add("hidden");
+                okBtn.removeEventListener("click", onDismiss);
+                resolve();
+            };
+
+            okBtn.addEventListener("click", onDismiss);
+        });
+    }
+
     // Check Auth Status on Load
     checkAuthStatus();
 
@@ -343,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast("Base resume uploaded and extracted successfully.", "success", "Upload Complete");
             displayActiveResume(data.filename);
         } catch (err) {
-            showToast(err.message, "error", "Upload Error");
+            showCustomAlert("Upload Error", err.message, "error");
         } finally {
             if (uploadBtn) {
                 uploadBtn.disabled = false;
@@ -378,7 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast("Base resume deleted successfully.", "success", "Deleted");
             
         } catch (err) {
-            showToast(err.message, "error", "Delete Error");
+            showCustomAlert("Delete Error", err.message, "error");
         }
     });
 
@@ -430,7 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             shimmerLoader?.classList.add("hidden");
             emptyState?.classList.remove("hidden");
-            showToast(err.message, "error", "Analysis Failed");
+            showCustomAlert("Match Analysis Error", err.message, "error");
         } finally {
             submitMatchBtn.disabled = false;
             submitMatchBtn.innerHTML = `
@@ -540,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             shimmerLoader?.classList.add("hidden");
             emptyState?.classList.remove("hidden");
-            showToast(err.message, "error", "Alignment Failed");
+            showCustomAlert("Alignment Error", err.message, "error");
         } finally {
             if (submitTailorBtn) {
                 submitTailorBtn.disabled = false;
@@ -636,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Floating Bubble Toast System
     function showToast(message, type = "info", title = "") {
-        if (!toastContainer) return alert(message);
+        if (!toastContainer) return showCustomAlert(title || "Notification", message, type);
 
         const toast = document.createElement("div");
         toast.className = `toast-bubble toast-${type}`;
