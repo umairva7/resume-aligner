@@ -39,3 +39,25 @@ async def test_match_analyzer_service_caching(db_session):
 
     assert result2["id"] == result1["id"]
     assert result2["match_score"] == result1["match_score"]
+
+
+def test_usage_limit_service(db_session):
+    from app.services.usage_service import UsageLimitService
+    from app.db import models
+
+    user = models.User(email="test@user.com", google_id="12345", name="Test User")
+    db_session.add(user)
+    db_session.commit()
+
+    usage_service = UsageLimitService(db_session)
+    status = usage_service.get_user_usage_status(user.id)
+
+    assert "match" in status
+    assert "tailor" in status
+    assert status["match"]["limit"] == 5
+    assert status["match"]["remaining"] == 5
+    assert status["tailor"]["limit"] == 5
+    assert status["tailor"]["remaining"] == 5
+    assert "reset_in_seconds" in status
+    assert status["reset_in_seconds"] > 0
+
