@@ -1,102 +1,98 @@
-# Resume Tailor
+# Resume Aligner Pro 🚀
 
-**Automatically tailor your resume to any job description using AI.**
+**Enterprise AI Resume Alignment & ATS Optimization Engine**
 
-Upload your base resume once. Then every time you submit a new job description, get a tailored version that highlights relevant skills and experience—without changing the facts, just the emphasis.
-
----
-
-## What This Does
-
-### Problem It Solves
-
-Manually rewriting your resume for every job application is:
-
-- Time-consuming (15-30 min per application)
-- Error-prone (you might miss key skills the employer wants)
-- Inefficient at scale (applying to 50+ jobs?)
-
-### Solution
-
-1. Upload your resume **once** (stores permanently)
-2. Upload any job description
-3. Get back a tailored resume in **30 seconds** that:
-   - Keeps your real experience intact
-   - Highlights skills matching the JD
-   - Uses keywords the employer is looking for
-   - Maintains professional formatting
+Resume Aligner Pro is a high-performance web application designed to analyze match scores between a candidate's base resume and target job descriptions, perform skill gap detection, and dynamically generate ATS-optimized resumes in PDF and Word DOCX formats using modern AI LLM providers.
 
 ---
 
-## Tech Stack (Why Each)
+## 🌟 Key Features
 
-| Component | Technology | Why |
-| --- | --- | --- |
-| **Backend API** | FastAPI (Python) | Fast, clean, built for APIs. You know Python. |
-| **LLM** | Use Ollama. | Best at understanding context and rewriting naturally. Better than GPT for nuance. |
-| **Storage** | Local filesystem + SQLite | Simple for MVP. No database overhead. Scales fine for 100s of resumes. |
-| **Frontend** | HTML + Fetch API | Lightweight, zero dependencies, fast iteration. You can replace with React/Vue later. |
-| **Deployment** | Replit/Railway/Vercel | Free tier, instant deploy, no DevOps headaches for MVP. |
-
-**What we *didn't* use:**
-
-- n8n (unnecessary orchestration for 2-endpoint system)
-- MongoDB (SQLite is fine for versioning)
-- AWS Lambda (Replit/Railway is simpler)
-- React (HTML works; add it if you need it later)
-
-**Bottom line:** Minimal tools, maximum functionality. Easy to explain to clients.
+1. **Dual Feature Workspace**:
+   - **Match Analyzer**: Instant ATS match score calculation, skill breakdown (matched vs missing), keyword density, and strategic recommendation report.
+   - **Resume Tailor**: Generates high-impact, ATS-optimized Markdown, PDF, and DOCX resumes aligned with specific job post requirements.
+2. **Multi-LLM Strategy Architecture**:
+   - **Groq API**: Sub-second cloud inference powered by Llama-3.1-8b (Recommended for production).
+   - **Ollama**: Local, private on-premise execution (Llama 3 / Qwen 2.5).
+   - **Hugging Face Inference API**: Open-weights serverless inference.
+   - **Google Gemini**: High-capacity Google AI inference.
+   - **Mock Mode**: Zero-key local testing and demonstration mode.
+3. **Performance Caching**:
+   - Automatic caching of match analysis reports per base resume to eliminate redundant LLM API calls and optimize latency.
+4. **ATS Document Generation**:
+   - Professional PDF & DOCX exporters with clean typography, bullet formatting, and clickable social links (LinkedIn, GitHub, Portfolio).
+5. **Production Readiness**:
+   - Comprehensive `/health` endpoint monitoring Database, Storage, and LLM readiness.
+   - Secure HttpOnly session management, input validation, and generic error handlers preventing stack trace leakage.
 
 ---
 
-## Architecture
+## 🛠️ Tech Stack
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Frontend (HTML)                         │
-│  ┌──────────────────┐  ┌──────────────────────────────────┐ │
-│  │ Upload Base      │  │ Upload Job Description +         │ │
-│  │ Resume Form      │  │ Get Tailored Resume Form         │ │
-│  └────────┬─────────┘  └──────────────┬───────────────────┘ │
-└───────────┼──────────────────────────────┼──────────────────┘
-            │                              │
-            │ POST /upload-base-resume     │ POST /tailor-resume
-            │                              │
-┌───────────▼──────────────────────────────▼──────────────────┐
-│                    FastAPI Backend                          │
-│  ┌──────────────────┐        ┌───────────────────────────┐  │
-│  │ Upload Handler   │        │ Resume Tailor Logic       │  │
-│  │ (store file)     │        │ (read → prompt → store)   │  │
-│  └──────────────────┘        └───────────────────────────┘  │
-└──────────────┬─────────────────────────┬────────────────────┘
-               │                         │
-               │                         │ API call
-         ┌─────▼─────┐          ┌────────▼─────────┐
-         │  Filesystem │          │  Claude API     │
-         │  /uploads/  │          │  (Anthropic)    │
-         └─────────────┘          └─────────────────┘
-               │
-         ┌─────▼──────────────┐
-         │ SQLite Database    │
-         │ (version history)  │
-         └────────────────────┘
+- **Backend Framework**: FastAPI (Python 3.9+)
+- **Database**: SQLite / SQLAlchemy 2.0 with foreign key enforcement and connection pooling
+- **LLM Integration**: HTTPX Async Client supporting Groq, Ollama, Hugging Face, Gemini
+- **Document Export**: ReportLab (PDF) & Python-Docx (DOCX)
+- **Frontend**: Glassmorphic split-screen HTML5 / Vanilla CSS / Modern JS (No heavy node dependencies)
+
+---
+
+## 🚀 Quick Start (Local Development)
+
+### 1. Clone & Setup Virtual Environment
+```bash
+git clone https://github.com/umairva7/resume-aligner.git
+cd resume-aligner
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-**Flow:**
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
 
-1. User uploads base resume → saved to `/uploads/base_resume/`
-2. User uploads JD → backend reads both files
-3. Backend creates prompt: "Here's a resume + JD, tailor it"
-4. Claude rewrites resume to align with JD
-5. Tailored version saved to `/uploads/tailored/` with timestamp
-6. Versioned in SQLite for audit trail
+### 3. Run Development Server
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+Open [http://localhost:8000](http://localhost:8000) in your browser.
 
 ---
 
-## Installation & Setup
+## 🔒 Production Deployment Checklist & Setup
 
-### Prerequisites
+### Deploying to Railway / Render / VPS
 
-- Python 3.9+
-- pip (Python package manager)
-- Use Ollama.
+1. **Set Environment Variables in Host Dashboard**:
+   - `APP_ENV="production"`
+   - `DEBUG=False`
+   - `SESSION_SECRET="<generate-random-secret>"`
+   - `SECURE_COOKIES=True`
+   - `ALLOWED_ORIGINS="https://your-domain.up.railway.app"`
+   - `LLM_PROVIDER="groq"`
+   - `GROQ_API_KEY="<your-groq-api-key>"`
+
+2. **Start Command (via Procfile or CLI)**:
+   ```bash
+   gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
+   ```
+
+3. **Verify Health Endpoint**:
+   Check `https://your-domain.up.railway.app/health` to confirm database, storage, and LLM status.
+
+---
+
+## 🧪 Running Automated Tests
+
+Run the test suite using `pytest`:
+```bash
+pytest -v
+```
+
+---
+
+## 📄 License
+MIT License. Created by Umair Imran.
