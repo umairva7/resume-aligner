@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     MAX_RESUME_TEXT_CHARS: int = 30000
     LLM_TIMEOUT_SECONDS: float = 30.0
 
+    # Daily Feature Rate Limits
+    DAILY_MATCH_LIMIT: int = 5
+    DAILY_TAILOR_LIMIT: int = 5
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()
