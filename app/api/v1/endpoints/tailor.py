@@ -13,13 +13,24 @@ from datetime import datetime, timedelta
 router = APIRouter()
 
 from app.core.logging import logger
+from app.services.usage_service import UsageLimitService
+
+@router.get("/usage-status")
+def get_usage_status(
+    current_user: models.User = Depends(deps.get_current_user),
+    usage_service: UsageLimitService = Depends(deps.get_usage_service)
+):
+    """Retrieve daily feature rate limits, remaining lives, and reset countdown timer."""
+    return usage_service.get_user_usage_status(current_user.id)
+
 
 @router.post("/analyze-match", response_model=MatchAnalysisResponse)
 async def analyze_resume_match(
     payload: MatchAnalysisRequest,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user),
-    match_service: MatchAnalyzerService = Depends(deps.get_match_service)
+    match_service: MatchAnalyzerService = Depends(deps.get_match_service),
+    usage_service: UsageLimitService = Depends(deps.get_usage_service)
 ):
     """Analyze match score, skills overlap/missing, and recommendations for active base resume."""
     repo = deps.get_resume_repository(db)
@@ -28,6 +39,15 @@ async def analyze_resume_match(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No active base resume found. Upload a resume first."
+        )
+
+    # Check Daily Rate Limit for Match Analyzer
+    try:
+        usage_service.check_and_increment_match(current_user.id)
+    except ValueError as err:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=str(err)
         )
 
     target_job_title = payload.job_title or "Target Position"
@@ -52,7 +72,8 @@ async def align_resume(
     payload: TailorResumeRequest,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user),
-    tailor_service: ResumeTailorService = Depends(deps.get_tailor_service)
+    tailor_service: ResumeTailorService = Depends(deps.get_tailor_service),
+    usage_service: UsageLimitService = Depends(deps.get_usage_service)
 ):
     """Tailor base resume against target job description using configured LLM Provider."""
     repo = deps.get_resume_repository(db)
@@ -63,25 +84,13 @@ async def align_resume(
             detail="No active base resume found. Upload a resume first."
         )
 
-    # 1. Cleanup old records (6 hours expiration)
-    six_hours_ago = datetime.utcnow() - timedelta(hours=6)
-    db.query(TailoredResume).filter(
-        TailoredResume.base_resume_id == active_resume.id,
-        TailoredResume.created_at < six_hours_ago
-    ).delete()
-    db.commit()
-
-    # 2. Check Daily Limit (Max 3 per day)
-    start_of_today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-    daily_count = db.query(TailoredResume).filter(
-        TailoredResume.base_resume_id == active_resume.id,
-        TailoredResume.created_at >= start_of_today
-    ).count()
-
-    if daily_count >= 3:
+    # Check Daily Rate Limit for Resume Tailor
+    try:
+        usage_service.check_and_increment_tailor(current_user.id)
+    except ValueError as err:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Daily limit reached. You can only tailor 3 resumes per day to save storage."
+            detail=str(err)
         )
 
     target_job_title = payload.job_title or "Target Position"

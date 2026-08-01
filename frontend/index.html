@@ -115,6 +115,14 @@
                     <button type="button" id="switchModeBtn" class="switch-mode-btn">Switch</button>
                 </div>
 
+                <!-- Daily Feature Lives Widget -->
+                <div id="dailyLivesWidget" class="daily-lives-widget hidden" title="Daily Feature Usage & Reset Countdown">
+                    <span class="widget-label">⚡ Daily Lives:</span>
+                    <span id="matchLivesPill" class="lives-pill match-pill">💙 Match: <strong id="matchLivesCount">5/5</strong></span>
+                    <span id="tailorLivesPill" class="lives-pill tailor-pill">✨ Tailor: <strong id="tailorLivesCount">5/5</strong></span>
+                    <span id="resetTimerPill" class="reset-timer-pill hidden">⏳ <span id="resetTimerText">Resets in 23h 59m</span></span>
+                </div>
+
                 <div class="status-indicator">
                     <span class="pulse-dot"></span>
                     <span class="status-text">AI Engine: <strong id="currentProviderLabel">Groq (Llama 3 / Cloud)</strong></span>

@@ -363,6 +363,65 @@ body {
     border: 1px solid var(--border);
 }
 
+/* Daily Lives Header Widget */
+.daily-lives-widget {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--base);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 0.35rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: all 0.25s ease;
+}
+
+.daily-lives-widget:hover {
+    border-color: var(--accent);
+}
+
+.lives-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.6rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.lives-pill.match-pill {
+    background: rgba(6, 182, 212, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.lives-pill.tailor-pill {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--accent-emerald);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.lives-pill.exhausted {
+    background: rgba(244, 63, 94, 0.12) !important;
+    color: var(--accent-rose) !important;
+    border: 1px solid rgba(244, 63, 94, 0.3) !important;
+}
+
+.reset-timer-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 0.18rem 0.6rem;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+}
+
 .pulse-dot {
     width: 8px;
     height: 8px;

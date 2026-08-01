@@ -64,6 +64,13 @@ def get_match_service(
     repo = ResumeRepository(db)
     return MatchAnalyzerService(llm_provider=llm, repository=repo)
 
+from app.services.usage_service import UsageLimitService
+
+def get_usage_service(
+    db: Session = Depends(get_db)
+) -> UsageLimitService:
+    return UsageLimitService(db)
+
 def get_current_user_optional(request: Request, db: Session = Depends(get_db)) -> Optional[models.User]:
     session_token = request.cookies.get("session_token")
     if not session_token:
