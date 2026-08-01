@@ -710,10 +710,12 @@ document.addEventListener("DOMContentLoaded", () => {
             matchAnalysisCard?.classList.remove("hidden");
 
             showToast(`Match score computed: ${data.match_score}%`, "success", "Analysis Complete");
+            fetchUsageStatus();
         } catch (err) {
             shimmerLoader?.classList.add("hidden");
             emptyState?.classList.remove("hidden");
-            showCustomAlert("Match Analysis Error", err.message, "error");
+            showCustomAlert("Match Analysis Limit / Error", err.message, "error");
+            fetchUsageStatus();
         } finally {
             submitMatchBtn.disabled = false;
             submitMatchBtn.innerHTML = `
@@ -824,10 +826,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (copyBtn) copyBtn.disabled = false;
 
             showToast("Resume tailored successfully.", "success", "Alignment Complete");
+            fetchUsageStatus();
         } catch (err) {
             shimmerLoader?.classList.add("hidden");
             emptyState?.classList.remove("hidden");
-            showCustomAlert("Alignment Error", err.message, "error");
+            showCustomAlert("Resume Tailor Limit / Error", err.message, "error");
+            fetchUsageStatus();
         } finally {
             if (submitTailorBtn) {
                 submitTailorBtn.disabled = false;
