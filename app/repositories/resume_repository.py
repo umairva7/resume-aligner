@@ -72,6 +72,12 @@ class ResumeRepository(BaseRepository[Resume]):
         self.db.refresh(tailored)
         return tailored
 
+    def get_cached_match_analysis(self, base_resume_id: int, job_description_text: str) -> Optional[MatchAnalysis]:
+        return self.db.query(MatchAnalysis).filter(
+            MatchAnalysis.base_resume_id == base_resume_id,
+            MatchAnalysis.job_description_text == job_description_text
+        ).order_by(MatchAnalysis.created_at.desc()).first()
+
     def save_match_analysis(
         self, base_resume_id: int, resume_hash: str, job_title: str, job_description_text: str,
         match_score: int, skills_matched: list, skills_missing: list,

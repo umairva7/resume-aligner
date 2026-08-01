@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 
 # --- Base Resume Schemas ---
@@ -19,11 +19,11 @@ class BaseResumeDetailResponse(BaseResumeResponse):
 
 # --- Tailoring Schemas ---
 class TailorResumeRequest(BaseModel):
-    job_title: Optional[str] = "Target Role"
-    job_description: str
-    linkedin_url: str
-    github_url: str
-    portfolio_url: Optional[str] = None
+    job_title: Optional[str] = Field("Target Role", max_length=255)
+    job_description: str = Field(..., min_length=15, max_length=25000, description="Job post description text")
+    linkedin_url: str = Field("", max_length=512)
+    github_url: str = Field("", max_length=512)
+    portfolio_url: Optional[str] = Field(None, max_length=512)
 
 
 class TailoredResumeResponse(BaseModel):
@@ -42,8 +42,8 @@ class TailoredResumeResponse(BaseModel):
 
 # --- Match Analyzer Schemas ---
 class MatchAnalysisRequest(BaseModel):
-    job_title: Optional[str] = "Target Role"
-    job_description: str
+    job_title: Optional[str] = Field("Target Role", max_length=255)
+    job_description: str = Field(..., min_length=15, max_length=25000, description="Job post description text")
 
 
 class MatchAnalysisResponse(BaseModel):

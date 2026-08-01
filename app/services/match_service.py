@@ -49,6 +49,27 @@ class MatchAnalyzerService:
         if not resume:
             raise ValueError(f"Resume with ID {resume_id} not found.")
 
+        # Check Cache for existing JD analysis on this base resume
+        cached_analysis = self.repository.get_cached_match_analysis(
+            base_resume_id=resume.id,
+            job_description_text=job_description
+        )
+        if cached_analysis:
+            try:
+                return {
+                    "id": cached_analysis.id,
+                    "status": "success",
+                    "match_score": cached_analysis.match_score,
+                    "skills_matched": json.loads(cached_analysis.skills_matched) if cached_analysis.skills_matched else [],
+                    "skills_missing": json.loads(cached_analysis.skills_missing) if cached_analysis.skills_missing else [],
+                    "keywords_found": cached_analysis.keywords_found or 0,
+                    "keywords_total": cached_analysis.keywords_total or 0,
+                    "recommendations": json.loads(cached_analysis.recommendations) if cached_analysis.recommendations else [],
+                    "created_at": cached_analysis.created_at
+                }
+            except Exception:
+                pass  # Fallback to fresh LLM analysis if cached JSON fails to parse
+
         user_prompt = f"""
 TARGET JOB TITLE:
 {job_title}

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import httpx
 from app.core.config import settings
+from app.core.logging import logger
 
 class BaseLLMProvider(ABC):
     """Abstract Strategy Class for LLM interaction."""
@@ -26,11 +27,21 @@ class OllamaLLMProvider(BaseLLMProvider):
             "stream": False
         }
         
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            response = await client.post(url, json=payload)
-            response.raise_for_status()
-            data = response.json()
-            return data.get("response", "")
+        try:
+            async with httpx.AsyncClient(timeout=settings.LLM_TIMEOUT_SECONDS) as client:
+                response = await client.post(url, json=payload)
+                response.raise_for_status()
+                data = response.json()
+                return data.get("response", "")
+        except httpx.TimeoutException:
+            logger.error("Ollama request timed out after %s seconds", settings.LLM_TIMEOUT_SECONDS)
+            raise RuntimeError("Ollama service timed out. Please try again shortly.")
+        except httpx.ConnectError:
+            logger.error("Could not connect to Ollama instance at %s", self.base_url)
+            raise RuntimeError("Ollama service is unreachable. Verify Ollama is running.")
+        except Exception as e:
+            logger.error("Unexpected error calling Ollama: %s", str(e))
+            raise RuntimeError(f"Ollama generation failed: {str(e)}")
 
 
 class HuggingFaceLLMProvider(BaseLLMProvider):
