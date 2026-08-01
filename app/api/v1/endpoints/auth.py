@@ -15,6 +15,8 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
 
+from app.core.logging import logger
+
 @router.get("/login")
 async def login():
     """Redirect to Google OAuth2 consent screen."""
@@ -68,13 +70,13 @@ async def demo_login(response: Response, db: Session = Depends(deps.get_db)):
             httponly=True,
             samesite="lax",
             max_age=7 * 24 * 60 * 60,
-            secure=False
+            secure=settings.SECURE_COOKIES
         )
         return redirect_response
     except Exception as e:
-        print(f"[DEMO LOGIN ERROR] {str(e)}")
+        logger.error("[DEMO LOGIN ERROR] %s", str(e))
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Demo sign-in failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Demo sign-in failed. Please try again.")
 
 @router.get("/callback")
 async def callback(code: str, request: Request, response: Response, db: Session = Depends(deps.get_db)):
@@ -93,7 +95,7 @@ async def callback(code: str, request: Request, response: Response, db: Session 
                 }
             )
             if token_res.status_code != 200:
-                print(f"[AUTH ERROR] Token exchange failed: {token_res.status_code} - {token_res.text}")
+                logger.error("[AUTH ERROR] Token exchange failed: %s - %s", token_res.status_code, token_res.text)
                 # Redirect to demo login on OAuth credential error
                 return RedirectResponse(url="/api/v1/auth/demo-login")
             
@@ -106,7 +108,7 @@ async def callback(code: str, request: Request, response: Response, db: Session 
                 headers={"Authorization": f"Bearer {access_token}"}
             )
             if user_res.status_code != 200:
-                print(f"[AUTH ERROR] Userinfo fetch failed: {user_res.status_code} - {user_res.text}")
+                logger.error("[AUTH ERROR] Userinfo fetch failed: %s - %s", user_res.status_code, user_res.text)
                 return RedirectResponse(url="/api/v1/auth/demo-login")
                 
             user_info = user_res.json()
@@ -155,12 +157,12 @@ async def callback(code: str, request: Request, response: Response, db: Session 
             httponly=True,
             samesite="lax",
             max_age=7 * 24 * 60 * 60,  # 7 days
-            secure=False
+            secure=settings.SECURE_COOKIES
         )
         return redirect_response
 
     except Exception as e:
-        print(f"[AUTH UNHANDLED EXCEPTION] {str(e)}")
+        logger.error("[AUTH UNHANDLED EXCEPTION] %s", str(e))
         db.rollback()
         return RedirectResponse(url="/api/v1/auth/demo-login")
 
@@ -173,7 +175,7 @@ async def logout(request: Request, response: Response, db: Session = Depends(dep
             db.query(models.UserSession).filter(models.UserSession.session_token == session_token).delete()
             db.commit()
     except Exception as e:
-        print(f"[LOGOUT EXCEPTION] {str(e)}")
+        logger.error("[LOGOUT EXCEPTION] %s", str(e))
         db.rollback()
         
     response.delete_cookie("session_token")

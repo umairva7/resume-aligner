@@ -360,8 +360,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 landingDemoLoginBtn?.classList.remove("hidden");
                 landingUserProfile?.classList.add("hidden");
             }
-        } catch (err) {
-            console.error("Auth check failed:", err);
+        } catch (_) {
+            isAuthenticated = false;
         }
     }
 
