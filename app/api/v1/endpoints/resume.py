@@ -1,6 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api import deps
+from app.core.config import settings
+from app.core.logging import logger
 from app.db import models
 from app.schemas.resume import BaseResumeResponse, BaseResumeDetailResponse
 from app.utils.file_helpers import is_allowed_file
@@ -15,11 +17,28 @@ async def upload_base_resume(
     storage_service = Depends(deps.get_storage_service),
     parser_service = Depends(deps.get_parser_service)
 ):
-    """Upload and parse base resume."""
-    if not is_allowed_file(file.filename):
+    """Upload, validate, and parse candidate base resume."""
+    if not file.filename or not is_allowed_file(file.filename):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Unsupported file format. Please upload PDF, DOCX, or TXT."
+        )
+
+    # Validate File Size Limit
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+    
+    if file_size > settings.MAX_FILE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File exceeds maximum allowed size of {settings.MAX_FILE_SIZE_BYTES // (1024 * 1024)}MB."
+        )
+
+    if file_size == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file is empty."
         )
 
     # Save to disk
@@ -29,9 +48,16 @@ async def upload_base_resume(
     try:
         extracted_text = parser_service.parse_file(saved_path)
     except Exception as e:
+        logger.error("Text parsing failed for %s: %s", filename, str(e))
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Failed to parse resume text: {str(e)}"
+            detail="Failed to extract text from resume file."
+        )
+
+    if len(extracted_text.strip()) < 20:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Resume text contains insufficient information. Please upload a clear document."
         )
 
     # Save record to database
@@ -43,6 +69,7 @@ async def upload_base_resume(
         user_id=current_user.id
     )
 
+    logger.info("Base resume uploaded successfully for user_id=%s, resume_id=%s", current_user.id, resume.id)
     return resume
 
 

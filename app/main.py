@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from app.core.config import settings
+from app.core.logging import logger
 from app.db.session import engine
 from app.db import models
 from app.api import deps
@@ -16,17 +19,48 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.APP_NAME,
+    description="Enterprise AI Resume Alignment & ATS Optimization Engine",
+    version="2.5.0",
     openapi_url="/api/v1/openapi.json"
 )
+
+# Parse configured CORS origins cleanly
+allowed_origins_list = [origin.strip() for origin in settings.ALLOWED_ORIGINS.split(",") if origin.strip()]
+if not allowed_origins_list:
+    allowed_origins_list = [settings.FRONTEND_URL, "http://localhost:8000"]
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Global Exception Handler to prevent stack traces leaking to production users
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error("Unhandled Exception on %s %s: %s", request.method, request.url.path, str(exc), exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "status": "error",
+            "error": "Internal server error. Please try again later.",
+            "error_code": "INTERNAL_SERVER_ERROR",
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+    )
+
+# Root Health Route for Uptime Monitors (Pingdom/UptimeRobot/Sentry)
+@app.get("/health", tags=["System Health"])
+async def root_health_check(db: Session = Depends(deps.get_db)):
+    """Convenience top-level health check endpoint."""
+    return {
+        "status": "ok",
+        "app": settings.APP_NAME,
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
 
 # Root endpoint for direct POST /analyze-match as requested in deliverables
 @app.post("/analyze-match", response_model=MatchAnalysisResponse, tags=["Match Analyzer"])
@@ -52,9 +86,10 @@ async def analyze_match_root(
             job_description=payload.job_description
         )
     except Exception as e:
+        logger.error("Root analyze match error: %s", str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Match Analysis failed: {str(e)}"
+            detail="Match Analysis failed. Please verify job description input."
         )
 
 # Include API endpoints

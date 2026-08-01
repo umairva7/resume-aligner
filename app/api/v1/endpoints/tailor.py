@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 
 router = APIRouter()
 
+from app.core.logging import logger
+
 @router.post("/analyze-match", response_model=MatchAnalysisResponse)
 async def analyze_resume_match(
     payload: MatchAnalysisRequest,
@@ -38,9 +40,10 @@ async def analyze_resume_match(
         )
         return analysis_result
     except Exception as e:
+        logger.error("Match Analysis exception for user_id=%s: %s", current_user.id, str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Match Analysis failed: {str(e)}"
+            detail="Match Analysis processing failed. Please try again."
         )
 
 
