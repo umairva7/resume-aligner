@@ -20,7 +20,7 @@ class UserSession(Base):
     __tablename__ = "user_sessions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     session_token: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -31,7 +31,7 @@ class Resume(Base):
     __tablename__ = "resumes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True, nullable=True)
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     file_path: Mapped[str] = mapped_column(String(512), nullable=False)
     extracted_text: Mapped[str] = mapped_column(Text, nullable=False)
@@ -50,7 +50,7 @@ class TailoredResume(Base):
     __tablename__ = "tailored_resumes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    base_resume_id: Mapped[int] = mapped_column(Integer, ForeignKey("resumes.id"), nullable=False)
+    base_resume_id: Mapped[int] = mapped_column(Integer, ForeignKey("resumes.id"), index=True, nullable=False)
     job_title: Mapped[str] = mapped_column(String(255), nullable=True)
     job_description_text: Mapped[str] = mapped_column(Text, nullable=False)
     tailored_text: Mapped[str] = mapped_column(Text, nullable=False)
@@ -66,8 +66,8 @@ class MatchAnalysis(Base):
     __tablename__ = "match_analyses"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    base_resume_id: Mapped[int] = mapped_column(Integer, ForeignKey("resumes.id"), nullable=False)
-    resume_hash: Mapped[str] = mapped_column(String(255), nullable=True)
+    base_resume_id: Mapped[int] = mapped_column(Integer, ForeignKey("resumes.id"), index=True, nullable=False)
+    resume_hash: Mapped[str] = mapped_column(String(255), index=True, nullable=True)
     job_title: Mapped[str] = mapped_column(String(255), nullable=True)
     job_description_text: Mapped[str] = mapped_column(Text, nullable=False)
     match_score: Mapped[int] = mapped_column(Integer, nullable=False)
