@@ -350,6 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 
                 fetchActiveResume();
+                fetchUsageStatus();
             } else {
                 isAuthenticated = false;
                 loginBtn?.classList.remove("hidden");
@@ -363,6 +364,84 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (_) {
             isAuthenticated = false;
         }
+    }
+
+    let resetTimerInterval = null;
+
+    async function fetchUsageStatus() {
+        if (!isAuthenticated) return;
+        try {
+            const res = await fetch("/api/v1/tailor/usage-status");
+            if (res.ok) {
+                const data = await res.json();
+                updateUsageUI(data);
+            }
+        } catch (_) {}
+    }
+
+    function updateUsageUI(data) {
+        if (!data) return;
+        const { match, tailor, reset_in_seconds } = data;
+        const widget = document.getElementById("dailyLivesWidget");
+        const matchCount = document.getElementById("matchLivesCount");
+        const tailorCount = document.getElementById("tailorLivesCount");
+        const matchPill = document.getElementById("matchLivesPill");
+        const tailorPill = document.getElementById("tailorLivesPill");
+        const resetPill = document.getElementById("resetTimerPill");
+
+        if (widget) widget.classList.remove("hidden");
+
+        if (matchCount) matchCount.textContent = `${match.remaining}/${match.limit}`;
+        if (tailorCount) tailorCount.textContent = `${tailor.remaining}/${tailor.limit}`;
+
+        if (matchPill) {
+            if (match.remaining === 0) {
+                matchPill.classList.add("exhausted");
+            } else {
+                matchPill.classList.remove("exhausted");
+            }
+        }
+
+        if (tailorPill) {
+            if (tailor.remaining === 0) {
+                tailorPill.classList.add("exhausted");
+            } else {
+                tailorPill.classList.remove("exhausted");
+            }
+        }
+
+        if (match.remaining === 0 || tailor.remaining === 0) {
+            if (resetPill) resetPill.classList.remove("hidden");
+            startResetCountdown(reset_in_seconds);
+        } else {
+            if (resetPill) resetPill.classList.add("hidden");
+            if (resetTimerInterval) clearInterval(resetTimerInterval);
+        }
+    }
+
+    function startResetCountdown(initialSeconds) {
+        if (resetTimerInterval) clearInterval(resetTimerInterval);
+        let secondsLeft = initialSeconds;
+
+        const updateTimer = () => {
+            if (secondsLeft <= 0) {
+                clearInterval(resetTimerInterval);
+                fetchUsageStatus();
+                return;
+            }
+            const hrs = Math.floor(secondsLeft / 3600);
+            const mins = Math.floor((secondsLeft % 3600) / 60);
+            const secs = secondsLeft % 60;
+
+            const resetText = document.getElementById("resetTimerText");
+            if (resetText) {
+                resetText.textContent = `Resets in ${hrs}h ${mins}m ${secs}s`;
+            }
+            secondsLeft--;
+        };
+
+        updateTimer();
+        resetTimerInterval = setInterval(updateTimer, 1000);
     }
 
     const handleLogin = () => { window.location.href = "/api/v1/auth/login"; };
