@@ -18,8 +18,9 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
 @router.get("/login")
 async def login():
     """Redirect to Google OAuth2 consent screen."""
-    if not settings.GOOGLE_CLIENT_ID:
-        raise HTTPException(status_code=500, detail="Google Auth is not configured")
+    if not settings.GOOGLE_CLIENT_ID or settings.GOOGLE_CLIENT_ID.startswith("YOUR_"):
+        # Fallback to demo login if Google Auth is not fully configured
+        return RedirectResponse(url="/api/v1/auth/demo-login")
         
     auth_url = (
         f"{GOOGLE_AUTH_URL}?"
@@ -27,98 +28,153 @@ async def login():
         f"client_id={settings.GOOGLE_CLIENT_ID}&"
         f"redirect_uri={settings.GOOGLE_REDIRECT_URI}&"
         f"scope=openid%20email%20profile&"
-        f"access_type=offline"
+        f"access_type=offline&"
+        f"prompt=consent"
     )
     return RedirectResponse(auth_url)
 
+@router.get("/demo-login")
+async def demo_login(response: Response, db: Session = Depends(deps.get_db)):
+    """Instant single-click demo authentication for local testing & development."""
+    try:
+        demo_google_id = "demo_user_studio_99"
+        user = db.query(models.User).filter(models.User.google_id == demo_google_id).first()
+        if not user:
+            user = models.User(
+                google_id=demo_google_id,
+                email="candidate.studio@resumealigner.io",
+                name="Demo Studio User",
+                picture=""
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        session_token = secrets.token_urlsafe(32)
+        expires_at = datetime.utcnow() + timedelta(days=7)
+        
+        user_session = models.UserSession(
+            user_id=user.id,
+            session_token=session_token,
+            expires_at=expires_at
+        )
+        db.add(user_session)
+        db.commit()
+
+        redirect_response = RedirectResponse(url=settings.FRONTEND_URL)
+        redirect_response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            samesite="lax",
+            max_age=7 * 24 * 60 * 60,
+            secure=False
+        )
+        return redirect_response
+    except Exception as e:
+        print(f"[DEMO LOGIN ERROR] {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Demo sign-in failed: {str(e)}")
+
 @router.get("/callback")
-async def callback(code: str, response: Response, db: Session = Depends(deps.get_db)):
+async def callback(code: str, request: Request, response: Response, db: Session = Depends(deps.get_db)):
     """Handle Google OAuth2 callback, create user, and issue session cookie."""
-    async with httpx.AsyncClient() as client:
-        # 1. Exchange code for token
-        token_res = await client.post(
-            GOOGLE_TOKEN_URL,
-            data={
-                "grant_type": "authorization_code",
-                "client_id": settings.GOOGLE_CLIENT_ID,
-                "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                "code": code,
-                "redirect_uri": settings.GOOGLE_REDIRECT_URI,
-            }
-        )
-        if token_res.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to retrieve token from Google")
-        
-        token_data = token_res.json()
-        access_token = token_data.get("access_token")
-        
-        # 2. Get user info
-        user_res = await client.get(
-            GOOGLE_USERINFO_URL,
-            headers={"Authorization": f"Bearer {access_token}"}
-        )
-        if user_res.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to retrieve user info from Google")
+    try:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            # 1. Exchange code for token
+            token_res = await client.post(
+                GOOGLE_TOKEN_URL,
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": settings.GOOGLE_CLIENT_ID,
+                    "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                    "code": code,
+                    "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+                }
+            )
+            if token_res.status_code != 200:
+                print(f"[AUTH ERROR] Token exchange failed: {token_res.status_code} - {token_res.text}")
+                # Redirect to demo login on OAuth credential error
+                return RedirectResponse(url="/api/v1/auth/demo-login")
             
-        user_info = user_res.json()
-    
-    # 3. Create or update user in DB
-    google_id = user_info.get("id")
-    email = user_info.get("email")
-    name = user_info.get("name")
-    picture = user_info.get("picture")
-    
-    user = db.query(models.User).filter(models.User.google_id == google_id).first()
-    if not user:
-        user = models.User(
-            google_id=google_id,
-            email=email,
-            name=name,
-            picture=picture
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    else:
-        # Update details in case they changed
-        user.email = email
-        user.name = name
-        user.picture = picture
-        db.commit()
-        db.refresh(user)
+            token_data = token_res.json()
+            access_token = token_data.get("access_token")
+            
+            # 2. Get user info
+            user_res = await client.get(
+                GOOGLE_USERINFO_URL,
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            if user_res.status_code != 200:
+                print(f"[AUTH ERROR] Userinfo fetch failed: {user_res.status_code} - {user_res.text}")
+                return RedirectResponse(url="/api/v1/auth/demo-login")
+                
+            user_info = user_res.json()
         
-    # 4. Create Session
-    session_token = secrets.token_urlsafe(32)
-    expires_at = datetime.utcnow() + timedelta(days=7)
-    
-    user_session = models.UserSession(
-        user_id=user.id,
-        session_token=session_token,
-        expires_at=expires_at
-    )
-    db.add(user_session)
-    db.commit()
-    
-    # 5. Set Cookie and redirect
-    response = RedirectResponse(url=settings.FRONTEND_URL)
-    response.set_cookie(
-        key="session_token",
-        value=session_token,
-        httponly=True,
-        samesite="lax",
-        max_age=7 * 24 * 60 * 60,  # 7 days
-        secure=False  # Set to True in production with HTTPS
-    )
-    return response
+        # 3. Create or update user in DB
+        google_id = user_info.get("id")
+        email = user_info.get("email")
+        name = user_info.get("name")
+        picture = user_info.get("picture")
+        
+        user = db.query(models.User).filter(models.User.google_id == google_id).first()
+        if not user:
+            user = models.User(
+                google_id=google_id,
+                email=email,
+                name=name,
+                picture=picture
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        else:
+            user.email = email
+            user.name = name
+            user.picture = picture
+            db.commit()
+            db.refresh(user)
+            
+        # 4. Create Session
+        session_token = secrets.token_urlsafe(32)
+        expires_at = datetime.utcnow() + timedelta(days=7)
+        
+        user_session = models.UserSession(
+            user_id=user.id,
+            session_token=session_token,
+            expires_at=expires_at
+        )
+        db.add(user_session)
+        db.commit()
+        
+        # 5. Set Cookie and redirect to frontend
+        redirect_response = RedirectResponse(url=settings.FRONTEND_URL)
+        redirect_response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            samesite="lax",
+            max_age=7 * 24 * 60 * 60,  # 7 days
+            secure=False
+        )
+        return redirect_response
+
+    except Exception as e:
+        print(f"[AUTH UNHANDLED EXCEPTION] {str(e)}")
+        db.rollback()
+        return RedirectResponse(url="/api/v1/auth/demo-login")
 
 @router.post("/logout")
 async def logout(request: Request, response: Response, db: Session = Depends(deps.get_db)):
     """Logout user and delete session cookie."""
-    session_token = request.cookies.get("session_token")
-    if session_token:
-        # Delete from DB
-        db.query(models.UserSession).filter(models.UserSession.session_token == session_token).delete()
-        db.commit()
+    try:
+        session_token = request.cookies.get("session_token")
+        if session_token:
+            db.query(models.UserSession).filter(models.UserSession.session_token == session_token).delete()
+            db.commit()
+    except Exception as e:
+        print(f"[LOGOUT EXCEPTION] {str(e)}")
+        db.rollback()
         
     response.delete_cookie("session_token")
     return {"message": "Logged out successfully"}

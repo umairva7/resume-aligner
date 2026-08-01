@@ -1,4 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Landing & Feature Selection Elements
+    const featureSelectionLanding = document.getElementById("featureSelectionLanding");
+    const selectFeatureBtns = document.querySelectorAll(".select-feature-btn");
+    const activeModeBadge = document.getElementById("activeModeBadge");
+    const activeModeText = document.getElementById("activeModeText");
+    const switchModeBtn = document.getElementById("switchModeBtn");
+    const socialLinksGroup = document.getElementById("socialLinksGroup");
+    const tailorActionsGroup = document.getElementById("tailorActionsGroup");
+    const step2Title = document.getElementById("step2Title");
+    const step2Desc = document.getElementById("step2Desc");
+    const emptyStateTitle = document.getElementById("emptyStateTitle");
+    const emptyStateDesc = document.getElementById("emptyStateDesc");
+
     // DOM Elements
     const uploadForm = document.getElementById("uploadForm");
     const fileInput = document.getElementById("resumeFileInput");
@@ -49,20 +62,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Theme Elements
     const themeToggleBtn = document.getElementById("themeToggleBtn");
+    const landingThemeToggleBtn = document.getElementById("landingThemeToggleBtn");
     const sunIcon = document.getElementById("sunIcon");
     const moonIcon = document.getElementById("moonIcon");
+    const sunIconLanding = document.querySelector(".sunIconLanding");
+    const moonIconLanding = document.querySelector(".moonIconLanding");
 
-    // Auth Elements
+    // Auth Elements (Main Header & Landing Header)
     const loginBtn = document.getElementById("loginBtn");
+    const demoLoginBtn = document.getElementById("demoLoginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const userProfile = document.getElementById("userProfile");
     const userAvatar = document.getElementById("userAvatar");
     const userName = document.getElementById("userName");
 
+    const landingLoginBtn = document.getElementById("landingLoginBtn");
+    const landingDemoLoginBtn = document.getElementById("landingDemoLoginBtn");
+    const landingLogoutBtn = document.getElementById("landingLogoutBtn");
+    const landingUserProfile = document.getElementById("landingUserProfile");
+    const landingUserAvatar = document.getElementById("landingUserAvatar");
+    const landingUserName = document.getElementById("landingUserName");
+
     let currentTailoredId = null;
     let rawTailoredMarkdown = "";
     let isAuthenticated = false;
     let currentAnalysisData = null;
+    let activeFeatureMode = null; // 'match' or 'tailor'
     
     // Initialize Theme (Default Dark)
     initTheme();
@@ -77,20 +102,143 @@ document.addEventListener("DOMContentLoaded", () => {
             document.body.setAttribute("data-theme", "light");
             sunIcon?.classList.remove("hidden");
             moonIcon?.classList.add("hidden");
+            sunIconLanding?.classList.remove("hidden");
+            moonIconLanding?.classList.add("hidden");
         } else {
             document.body.removeAttribute("data-theme");
             sunIcon?.classList.add("hidden");
             moonIcon?.classList.remove("hidden");
+            sunIconLanding?.classList.add("hidden");
+            moonIconLanding?.classList.remove("hidden");
         }
         localStorage.setItem("resume_aligner_theme", theme);
     }
 
-    themeToggleBtn?.addEventListener("click", () => {
+    function toggleTheme() {
         const currentTheme = document.body.getAttribute("data-theme") === "light" ? "light" : "dark";
         const newTheme = currentTheme === "dark" ? "light" : "dark";
         setTheme(newTheme);
         showToast(`Switched to ${newTheme} mode`, "info", "Theme Preference");
+    }
+
+    themeToggleBtn?.addEventListener("click", toggleTheme);
+    landingThemeToggleBtn?.addEventListener("click", toggleTheme);
+
+    // Handle Landing Screen Feature Card Selection - Direct Transition to Workspace
+    selectFeatureBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const feature = btn.getAttribute("data-feature");
+            enterWorkspace(feature);
+        });
     });
+
+    // Switch Feature Mode Button
+    switchModeBtn?.addEventListener("click", () => {
+        featureSelectionLanding?.classList.remove("fade-out");
+        activeModeBadge?.classList.add("hidden");
+    });
+
+    function enterWorkspace(feature) {
+        activeFeatureMode = feature;
+        featureSelectionLanding?.classList.add("fade-out");
+        activeModeBadge?.classList.remove("hidden");
+
+        if (feature === "match") {
+            if (activeModeText) activeModeText.textContent = "Mode: Match Analyzer";
+            if (step2Title) step2Title.textContent = "Match Requirements";
+            if (step2Desc) step2Desc.textContent = "Enter target role and job post to analyze skill gaps & match score.";
+            
+            socialLinksGroup?.classList.add("hidden");
+            submitMatchBtn?.classList.remove("hidden");
+            submitTailorBtn?.classList.add("hidden");
+            tailorActionsGroup?.classList.add("hidden");
+            
+            tabMatchBtn?.classList.remove("hidden");
+            tabTailorBtn?.classList.add("hidden");
+            tabMatchBtn?.click();
+
+            if (emptyStateTitle) emptyStateTitle.textContent = "Match Analyzer Ready";
+            if (emptyStateDesc) emptyStateDesc.textContent = "Upload master resume & enter target job description, then click 'Analyze Match Score'.";
+
+            if (currentAnalysisData) {
+                emptyState?.classList.add("hidden");
+                matchAnalysisCard?.classList.remove("hidden");
+            } else {
+                emptyState?.classList.remove("hidden");
+                matchAnalysisCard?.classList.add("hidden");
+            }
+
+        } else if (feature === "tailor") {
+            if (activeModeText) activeModeText.textContent = "Mode: Resume Tailor";
+            if (step2Title) step2Title.textContent = "Tailoring Requirements";
+            if (step2Desc) step2Desc.textContent = "Provide job description and social links to tailor your ATS resume.";
+
+            socialLinksGroup?.classList.remove("hidden");
+            submitMatchBtn?.classList.add("hidden");
+            submitTailorBtn?.classList.remove("hidden");
+            tailorActionsGroup?.classList.remove("hidden");
+
+            tabMatchBtn?.classList.add("hidden");
+            tabTailorBtn?.classList.remove("hidden");
+            tabTailorBtn?.click();
+
+            if (emptyStateTitle) emptyStateTitle.textContent = "Resume Tailor Ready";
+            if (emptyStateDesc) emptyStateDesc.textContent = "Upload master resume, fill target job info, and click 'Tailor Resume with AI'.";
+
+            if (rawTailoredMarkdown) {
+                emptyState?.classList.add("hidden");
+                paperContent?.classList.remove("hidden");
+            } else {
+                emptyState?.classList.remove("hidden");
+                paperContent?.classList.add("hidden");
+            }
+        }
+    }
+
+    // Custom Glassmorphic Sign-In Required Modal
+    function showCustomAuthModal(title, message) {
+        const modal = document.getElementById("customAuthModal");
+        const titleEl = document.getElementById("authModalTitle");
+        const msgEl = document.getElementById("authModalMessage");
+        const cancelBtn = document.getElementById("authCancelBtn");
+        const confirmBtn = document.getElementById("authConfirmBtn");
+        const demoBtn = document.getElementById("authDemoBtn");
+
+        if (!modal) {
+            window.location.href = "/api/v1/auth/login";
+            return;
+        }
+
+        if (titleEl) titleEl.textContent = title;
+        if (msgEl) msgEl.textContent = message;
+
+        modal.classList.remove("hidden");
+
+        const cleanup = () => {
+            modal.classList.add("hidden");
+            cancelBtn?.removeEventListener("click", onCancel);
+            confirmBtn?.removeEventListener("click", onConfirm);
+            demoBtn?.removeEventListener("click", onDemo);
+        };
+
+        const onCancel = () => {
+            cleanup();
+        };
+
+        const onConfirm = () => {
+            cleanup();
+            window.location.href = "/api/v1/auth/login";
+        };
+
+        const onDemo = () => {
+            cleanup();
+            window.location.href = "/api/v1/auth/demo-login";
+        };
+
+        cancelBtn?.addEventListener("click", onCancel);
+        confirmBtn?.addEventListener("click", onConfirm);
+        demoBtn?.addEventListener("click", onDemo);
+    }
 
     // Custom Glassmorphic Confirmation Modal Helper
     function showCustomConfirm(title, message) {
@@ -153,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else if (type === "success") {
                     iconBadge.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
                 } else {
-                    iconBadge.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+                    iconBadge.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
                 }
             }
 
@@ -179,48 +327,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 const user = await res.json();
                 isAuthenticated = true;
                 loginBtn?.classList.add("hidden");
+                demoLoginBtn?.classList.add("hidden");
                 userProfile?.classList.remove("hidden");
+
+                landingLoginBtn?.classList.add("hidden");
+                landingDemoLoginBtn?.classList.add("hidden");
+                landingUserProfile?.classList.remove("hidden");
+
                 const nameOrEmail = user.name || user.email || "User";
                 if (userName) userName.textContent = nameOrEmail;
+                if (landingUserName) landingUserName.textContent = nameOrEmail;
                 
-                if (userAvatar) {
-                    userAvatar.onerror = () => {
-                        const initial = nameOrEmail.charAt(0).toUpperCase();
-                        userAvatar.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="16" fill="%2306b6d4"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="bold" font-size="14">${initial}</text></svg>`;
-                    };
+                const avatarSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="16" fill="%2306b6d4"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="bold" font-size="14">${nameOrEmail.charAt(0).toUpperCase()}</text></svg>`;
 
-                    if (user.picture) {
-                        userAvatar.src = user.picture;
-                    } else {
-                        userAvatar.onerror();
-                    }
+                if (userAvatar) {
+                    userAvatar.onerror = () => { userAvatar.src = avatarSvg; };
+                    userAvatar.src = user.picture || avatarSvg;
+                }
+                if (landingUserAvatar) {
+                    landingUserAvatar.onerror = () => { landingUserAvatar.src = avatarSvg; };
+                    landingUserAvatar.src = user.picture || avatarSvg;
                 }
                 
                 fetchActiveResume();
             } else {
                 isAuthenticated = false;
                 loginBtn?.classList.remove("hidden");
+                demoLoginBtn?.classList.remove("hidden");
                 userProfile?.classList.add("hidden");
-                
-                if (emptyState) {
-                    emptyState.innerHTML = `
-                        <div class="empty-icon-badge">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        </div>
-                        <h3>Authentication Required</h3>
-                        <p>Please <strong>Sign in with Google</strong> using the header button to upload resumes and unlock the AI Alignment Studio.</p>`;
-                }
+
+                landingLoginBtn?.classList.remove("hidden");
+                landingDemoLoginBtn?.classList.remove("hidden");
+                landingUserProfile?.classList.add("hidden");
             }
         } catch (err) {
             console.error("Auth check failed:", err);
         }
     }
 
-    loginBtn?.addEventListener("click", () => {
-        window.location.href = "/api/v1/auth/login";
-    });
-
-    logoutBtn?.addEventListener("click", async () => {
+    const handleLogin = () => { window.location.href = "/api/v1/auth/login"; };
+    const handleDemoLogin = () => { window.location.href = "/api/v1/auth/demo-login"; };
+    const handleLogout = async () => {
         try {
             await fetch("/api/v1/auth/logout", { method: "POST" });
             showToast("Logged out successfully.", "success", "Signed Out");
@@ -228,7 +375,16 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             showToast("Logout failed.", "error", "Error");
         }
-    });
+    };
+
+    loginBtn?.addEventListener("click", handleLogin);
+    landingLoginBtn?.addEventListener("click", handleLogin);
+
+    demoLoginBtn?.addEventListener("click", handleDemoLogin);
+    landingDemoLoginBtn?.addEventListener("click", handleDemoLogin);
+
+    logoutBtn?.addEventListener("click", handleLogout);
+    landingLogoutBtn?.addEventListener("click", handleLogout);
 
     // View Tabs Switching Logic
     tabMatchBtn?.addEventListener("click", () => {
@@ -268,9 +424,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Version History Logic
+    // Version History Logic (Checks auth on click)
     historyBtn?.addEventListener("click", async () => {
-        if (!isAuthenticated) return showToast("Please sign in to view history.", "error", "Access Denied");
+        if (!isAuthenticated) {
+            return showCustomAuthModal("Sign In Required", "Please sign in to view version history.");
+        }
         
         if (!historyContainer.classList.contains("hidden")) {
             historyContainer.classList.add("hidden");
@@ -353,10 +511,12 @@ document.addEventListener("DOMContentLoaded", () => {
         showToast("Loaded tailored resume version.", "success", "History Loaded");
     }
 
-    // Handle Upload Base Resume
+    // Handle Upload Base Resume (Checks auth on submit)
     uploadForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (!isAuthenticated) return showToast("Please sign in to upload resumes.", "error", "Auth Required");
+        if (!isAuthenticated) {
+            return showCustomAuthModal("Sign In Required", "Please sign in to upload base resumes.");
+        }
         if (!fileInput || !fileInput.files.length) return showToast("Please select a file first.", "error", "No File Selected");
 
         if (uploadBtn) {
@@ -392,9 +552,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Handle Delete Active Base Resume with Custom Glassmorphic Confirmation Modal
+    // Handle Delete Active Base Resume (Checks auth on click)
     deleteResumeBtn?.addEventListener("click", async () => {
-        if (!isAuthenticated) return showToast("Please sign in first.", "error", "Auth Required");
+        if (!isAuthenticated) {
+            return showCustomAuthModal("Sign In Required", "Please sign in to manage base resumes.");
+        }
         
         const confirmed = await showCustomConfirm(
             "Delete Base Resume?",
@@ -422,9 +584,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // FEATURE 1: HANDLE MATCH ANALYZER REQUEST
+    // FEATURE 1: HANDLE MATCH ANALYZER REQUEST (Checks auth on click)
     submitMatchBtn?.addEventListener("click", async () => {
-        if (!isAuthenticated) return showToast("Please sign in to run match analysis.", "error", "Auth Required");
+        if (!isAuthenticated) {
+            return showCustomAuthModal("Sign In Required", "Please sign in to run Match Score Analysis.");
+        }
         
         const jobTitle = document.getElementById("jobTitleInput")?.value || "Target Position";
         const jobDescription = document.getElementById("jdInput")?.value || "";
@@ -475,7 +639,7 @@ document.addEventListener("DOMContentLoaded", () => {
             submitMatchBtn.disabled = false;
             submitMatchBtn.innerHTML = `
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                <span>Feature 1: Match Score Analyzer</span>`;
+                <span>Analyze Match Score</span>`;
         }
     });
 
@@ -506,10 +670,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // FEATURE 2: HANDLE TAILOR REQUEST
+    // FEATURE 2: HANDLE TAILOR REQUEST (Checks auth on submit)
     tailorForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (!isAuthenticated) return showToast("Please sign in to align your resume.", "error", "Auth Required");
+        if (activeFeatureMode === "match") return; // SubmitMatchBtn handles match analysis
+        
+        if (!isAuthenticated) {
+            return showCustomAuthModal("Sign In Required", "Please sign in to align and tailor your resume.");
+        }
         
         const jobTitle = document.getElementById("jobTitleInput")?.value || "";
         const jobDescription = document.getElementById("jdInput")?.value || "";
@@ -586,22 +754,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 submitTailorBtn.disabled = false;
                 submitTailorBtn.innerHTML = `
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    <span>Feature 2: Tailor Resume with AI</span>`;
+                    <span>Tailor Resume with AI</span>`;
             }
         }
     });
 
-    // Download PDF Action
+    // Download PDF Action (Checks auth on click)
     downloadPdfBtn?.addEventListener("click", () => {
-        if (!isAuthenticated) return showToast("Please sign in to download.", "error", "Auth Required");
+        if (!isAuthenticated) return showCustomAuthModal("Sign In Required", "Please sign in to download resumes.");
         if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error", "Not Ready");
         window.location.href = `/api/v1/tailor/download-pdf/${currentTailoredId}`;
         showToast("Generating PDF document...", "info", "Downloading PDF");
     });
 
-    // Download Word Action
+    // Download Word Action (Checks auth on click)
     downloadDocxBtn?.addEventListener("click", () => {
-        if (!isAuthenticated) return showToast("Please sign in to download.", "error", "Auth Required");
+        if (!isAuthenticated) return showCustomAuthModal("Sign In Required", "Please sign in to download resumes.");
         if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error", "Not Ready");
         window.location.href = `/api/v1/tailor/download-docx/${currentTailoredId}`;
         showToast("Generating Word document...", "info", "Downloading DOCX");
@@ -656,7 +824,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/^## (.*$)/gim, '<h2>$1</h2>')
             .replace(/^### (.*$)/gim, '### $1')
             .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+            .replace(/\*(.*?)\*/gim, 'em>$1</em>')
             .replace(/\[LinkedIn\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">LinkedIn</a>')
             .replace(/\[GitHub\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">GitHub</a>')
             .replace(/\[Portfolio\]\((.*?)\)/gim, '<a href="$1" target="_blank" class="social-link-badge">Portfolio</a>')
@@ -681,7 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const toast = document.createElement("div");
         toast.className = `toast-bubble toast-${type}`;
         
-        let iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+        let iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
 
         if (type === "success") {
             iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;

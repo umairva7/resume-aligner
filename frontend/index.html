@@ -12,6 +12,89 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- INITIAL FEATURE SELECTION LANDING SCREEN -->
+    <div id="featureSelectionLanding" class="feature-landing-overlay">
+        <!-- LANDING TOP BAR (THEME TOGGLE & AUTH CONTROLS) -->
+        <div class="landing-top-bar">
+            <div class="header-brand">
+                <div class="logo-badge">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <div class="brand-text">
+                    <span class="app-title">Resume Aligner</span>
+                    <span class="app-version">v2.5 Studio</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <!-- Theme Toggle Button for Landing Screen -->
+                <button id="landingThemeToggleBtn" class="theme-toggle-btn" title="Toggle Theme">
+                    <svg class="sunIconLanding hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moonIconLanding" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+
+                <!-- AUTH WIDGET FOR LANDING SCREEN -->
+                <div id="landingAuthWidget" class="auth-widget" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button id="landingLoginBtn" class="btn btn-sm btn-primary">Sign in with Google</button>
+                    <button id="landingDemoLoginBtn" class="btn btn-sm btn-secondary">Guest Sign-in</button>
+                    <div id="landingUserProfile" class="user-profile hidden" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <img id="landingUserAvatar" src="" alt="Avatar" referrerpolicy="no-referrer" class="avatar-img" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--accent); object-fit: cover;">
+                        <span id="landingUserName" class="user-name" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);"></span>
+                        <button id="landingLogoutBtn" class="btn btn-sm btn-secondary-action">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="landing-hero-content">
+            <div class="landing-badge">
+                <span class="pulse-dot"></span>
+                <span>Resume Aligner v2.5 Studio</span>
+            </div>
+            <h1 class="landing-title">AI-Powered Resume Studio</h1>
+            <p class="landing-subtitle">Choose a feature to begin optimizing your resume against target roles.</p>
+
+            <div class="feature-cards-grid">
+                <!-- Feature Card 1: Match Score Analyzer -->
+                <div class="feature-card" id="selectMatchFeatureCard">
+                    <div class="feature-card-icon match-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <h3>Match Score Analyzer</h3>
+                    <p>Analyze how well your master resume aligns with a target job description. Get instant skill gap breakdowns, keyword metrics, and strategic recommendations.</p>
+                    <div class="feature-card-tags">
+                        <span>Skill Gaps</span>
+                        <span>Keyword Count</span>
+                        <span>Match Score</span>
+                    </div>
+                    <button class="btn btn-primary full-width select-feature-btn" data-feature="match">
+                        <span>Launch Match Analyzer</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </div>
+
+                <!-- Feature Card 2: AI Resume Tailor -->
+                <div class="feature-card" id="selectTailorFeatureCard">
+                    <div class="feature-card-icon tailor-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </div>
+                    <h3>AI Resume Tailor</h3>
+                    <p>Generate a fully tailored, ATS-compliant resume engineered for target job descriptions. Export high-fidelity PDF and Word (.docx) documents with working social links.</p>
+                    <div class="feature-card-tags">
+                        <span>ATS Optimization</span>
+                        <span>PDF & DOCX Exports</span>
+                        <span>Clickable Links</span>
+                    </div>
+                    <button class="btn btn-primary full-width select-feature-btn" data-feature="tailor">
+                        <span>Launch Resume Tailor</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="saas-layout">
         <!-- Header Navbar -->
         <header class="app-header">
@@ -26,6 +109,12 @@
             </div>
             
             <div class="header-actions">
+                <!-- Mode Switcher Badge -->
+                <div id="activeModeBadge" class="active-mode-badge hidden">
+                    <span id="activeModeText">Mode: Match Analyzer</span>
+                    <button type="button" id="switchModeBtn" class="switch-mode-btn">Switch</button>
+                </div>
+
                 <div class="status-indicator">
                     <span class="pulse-dot"></span>
                     <span class="status-text">AI Engine: <strong id="currentProviderLabel">Groq (Llama 3 / Cloud)</strong></span>
@@ -38,8 +127,9 @@
                 </button>
 
                 <!-- AUTH WIDGET -->
-                <div id="authWidget" class="auth-widget" style="display: flex; align-items: center; gap: 0.85rem;">
+                <div id="authWidget" class="auth-widget" style="display: flex; align-items: center; gap: 0.5rem;">
                     <button id="loginBtn" class="btn btn-sm btn-primary">Sign in with Google</button>
+                    <button id="demoLoginBtn" class="btn btn-sm btn-secondary">Guest Sign-in</button>
                     <div id="userProfile" class="user-profile hidden" style="display: flex; align-items: center; gap: 0.75rem;">
                         <img id="userAvatar" src="" alt="Avatar" referrerpolicy="no-referrer" class="avatar-img" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--accent); object-fit: cover;">
                         <span id="userName" class="user-name" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);"></span>
@@ -93,13 +183,13 @@
                         </div>
                     </section>
 
-                    <!-- STEP 2: TARGET JOB CONTEXT & DUAL ACTION BUTTONS -->
+                    <!-- STEP 2: TARGET JOB CONTEXT & FEATURE ACTIONS -->
                     <section class="panel-section">
                         <div class="section-header">
                             <span class="step-bubble">2</span>
-                            <h3>Target Job Description</h3>
+                            <h3 id="step2Title">Target Job Description</h3>
                         </div>
-                        <p class="section-desc">Provide target role title and job description requirements.</p>
+                        <p class="section-desc" id="step2Desc">Provide target role title and job description requirements.</p>
 
                         <form id="tailorForm">
                             <div class="form-field">
@@ -112,60 +202,62 @@
                                 <textarea id="jdInput" rows="6" placeholder="Paste key responsibilities, required skills, and qualifications..." required></textarea>
                             </div>
 
-                            <!-- Social Link Profiles -->
-                            <div class="form-field">
-                                <label for="linkedinInput">LinkedIn Profile URL *</label>
-                                <div class="social-input-group">
-                                    <span class="social-input-icon">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-                                    </span>
-                                    <input type="url" id="linkedinInput" placeholder="https://linkedin.com/in/umair" required>
-                                </div>
-                            </div>
-                            <div class="form-field">
-                                <label for="githubInput">GitHub Profile URL *</label>
-                                <div class="social-input-group">
-                                    <span class="social-input-icon">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                                    </span>
-                                    <input type="url" id="githubInput" placeholder="https://github.com/umair" required>
-                                </div>
-                            </div>
-                            <div class="form-field">
-                                <label for="portfolioInput">Portfolio Website (Optional)</label>
-                                <div class="social-input-group">
-                                    <span class="social-input-icon">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                                    </span>
-                                    <input type="url" id="portfolioInput" placeholder="https://umair.dev">
-                                </div>
-                            </div>
-
-                            <!-- Advanced Settings Toggle -->
-                            <details class="advanced-settings">
-                                <summary class="settings-summary">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                                    Advanced Inference Settings
-                                </summary>
-                                <div class="settings-content">
-                                    <div class="form-field">
-                                        <label for="temperatureRange">Tailoring Strictness: <span id="tempValue">0.3</span></label>
-                                        <input type="range" id="temperatureRange" min="0.1" max="0.9" step="0.1" value="0.3">
-                                        <span class="field-hint">Lower values keep facts strict; higher values adapt formatting dynamically.</span>
+                            <!-- Social Link Profiles (Visible in Tailor mode) -->
+                            <div id="socialLinksGroup">
+                                <div class="form-field">
+                                    <label for="linkedinInput">LinkedIn Profile URL *</label>
+                                    <div class="social-input-group">
+                                        <span class="social-input-icon">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                                        </span>
+                                        <input type="url" id="linkedinInput" placeholder="https://linkedin.com/in/umair">
                                     </div>
                                 </div>
-                            </details>
+                                <div class="form-field">
+                                    <label for="githubInput">GitHub Profile URL *</label>
+                                    <div class="social-input-group">
+                                        <span class="social-input-icon">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                                        </span>
+                                        <input type="url" id="githubInput" placeholder="https://github.com/umair">
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="portfolioInput">Portfolio Website (Optional)</label>
+                                    <div class="social-input-group">
+                                        <span class="social-input-icon">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                        </span>
+                                        <input type="url" id="portfolioInput" placeholder="https://umair.dev">
+                                    </div>
+                                </div>
 
-                            <!-- FEATURE 1 & FEATURE 2 ACTIONS -->
+                                <!-- Advanced Settings Toggle -->
+                                <details class="advanced-settings">
+                                    <summary class="settings-summary">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                        Advanced Inference Settings
+                                    </summary>
+                                    <div class="settings-content">
+                                        <div class="form-field">
+                                            <label for="temperatureRange">Tailoring Strictness: <span id="tempValue">0.3</span></label>
+                                            <input type="range" id="temperatureRange" min="0.1" max="0.9" step="0.1" value="0.3">
+                                            <span class="field-hint">Lower values keep facts strict; higher values adapt formatting dynamically.</span>
+                                        </div>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <!-- CONTEXTUAL FEATURE ACTION BUTTONS -->
                             <div class="action-buttons-group" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
-                                <button type="button" id="submitMatchBtn" class="btn btn-secondary full-width" style="border-color: var(--accent); color: var(--accent);">
+                                <button type="button" id="submitMatchBtn" class="btn btn-primary full-width cta-btn">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                    <span>Feature 1: Match Score Analyzer</span>
+                                    <span>Analyze Match Score</span>
                                 </button>
                                 
                                 <button type="submit" id="submitTailorBtn" class="btn btn-primary full-width cta-btn">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                    <span>Feature 2: Tailor Resume with AI</span>
+                                    <span>Tailor Resume with AI</span>
                                 </button>
                             </div>
 
@@ -209,7 +301,7 @@
                         </div>
                     </div>
 
-                    <div class="toolbar-actions">
+                    <div class="toolbar-actions" id="tailorActionsGroup">
                         <button id="downloadPdfBtn" class="btn btn-sm btn-action" disabled>
                             <span>Download PDF</span>
                         </button>
@@ -230,8 +322,8 @@
                         <div class="empty-icon-badge">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         </div>
-                        <h3>No Analysis or Tailored Resume Generated Yet</h3>
-                        <p>Upload a base resume and enter a target job description to run a <strong>Match Score Analysis</strong> or generate a <strong>Tailored Resume</strong>.</p>
+                        <h3 id="emptyStateTitle">No Output Generated Yet</h3>
+                        <p id="emptyStateDesc">Upload your master resume and enter a target job description to run an analysis or generate a tailored resume.</p>
                     </div>
 
                     <!-- SHIMMER SKELETON LOADER -->
@@ -253,18 +345,18 @@
                     <div id="matchAnalysisCard" class="match-analysis-card hidden">
                         <div class="match-card-header">
                             <div class="match-score-gauge">
-                                <div class="gauge-value" id="matchGaugeValue">72%</div>
+                                <div class="gauge-value" id="matchGaugeValue">0%</div>
                                 <div class="gauge-label">Match Score</div>
                             </div>
                             <div class="keywords-pill" id="keywordsPill">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span id="keywordsText">18 / 24 Keywords Found</span>
+                                <span id="keywordsText">0 / 0 Keywords Found</span>
                             </div>
                         </div>
 
                         <!-- Progress Bar -->
                         <div class="match-progress-track">
-                            <div class="match-progress-bar" id="matchProgressBar" style="width: 72%;"></div>
+                            <div class="match-progress-bar" id="matchProgressBar" style="width: 0%;"></div>
                         </div>
 
                         <!-- Skills Breakdown Section -->
@@ -317,6 +409,22 @@
             </section>
 
         </main>
+    </div>
+
+    <!-- Glassmorphic Theme-Aligned Sign-In Required Modal -->
+    <div id="customAuthModal" class="modal-overlay hidden">
+        <div class="modal-bubble-card">
+            <div class="modal-icon-badge info">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <h3 id="authModalTitle">Sign In Required</h3>
+            <p id="authModalMessage">Please sign in to unlock resume tailoring & match analysis features.</p>
+            <div class="modal-actions" style="flex-direction: column; gap: 0.5rem; width: 100%;">
+                <button id="authConfirmBtn" class="btn btn-primary full-width">Sign in with Google</button>
+                <button id="authDemoBtn" class="btn btn-secondary full-width">Instant Guest Sign-In</button>
+                <button id="authCancelBtn" class="btn btn-secondary-action full-width" style="margin-top: 0.25rem;">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- Glassmorphic Theme-Aligned Custom Confirmation Modal -->

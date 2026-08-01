@@ -33,6 +33,14 @@ class Settings(BaseSettings):
     SESSION_SECRET: str = "super-secret-key-change-in-production"
     FRONTEND_URL: str = "http://localhost:8000"
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/callback"
+    ALLOWED_ORIGINS: str = "http://localhost:8000,http://127.0.0.1:8000"
+    SECURE_COOKIES: bool = False
+
+    # Security & Storage Limits
+    MAX_FILE_SIZE_BYTES: int = 10 * 1024 * 1024  # 10MB
+    MAX_JOB_DESCRIPTION_CHARS: int = 25000
+    MAX_RESUME_TEXT_CHARS: int = 30000
+    LLM_TIMEOUT_SECONDS: float = 30.0
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
