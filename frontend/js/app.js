@@ -89,6 +89,33 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentAnalysisData = null;
     let activeFeatureMode = null; // 'match' or 'tailor'
     
+    // Dynamic API Base URL & Authenticated Fetch Helper
+    const getApiBaseUrl = () => {
+        if (window.location.protocol === "file:") return "http://localhost:8000";
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            if (window.location.port && window.location.port !== "8000") {
+                return "http://localhost:8000";
+            }
+        }
+        return "";
+    };
+    const API_BASE = getApiBaseUrl();
+
+    async function apiFetch(endpoint, options = {}) {
+        const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
+        const defaultOptions = {
+            credentials: "include"
+        };
+        const mergedOptions = {
+            ...defaultOptions,
+            ...options,
+            headers: {
+                ...(options.headers || {})
+            }
+        };
+        return fetch(url, mergedOptions);
+    }
+    
     // Initialize Theme (Default Dark)
     initTheme();
 
@@ -205,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const demoBtn = document.getElementById("authDemoBtn");
 
         if (!modal) {
-            window.location.href = "/api/v1/auth/login";
+            window.location.href = `${API_BASE}/api/v1/auth/login`;
             return;
         }
 
@@ -227,12 +254,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const onConfirm = () => {
             cleanup();
-            window.location.href = "/api/v1/auth/login";
+            window.location.href = `${API_BASE}/api/v1/auth/login`;
         };
 
         const onDemo = () => {
             cleanup();
-            window.location.href = "/api/v1/auth/demo-login";
+            window.location.href = `${API_BASE}/api/v1/auth/demo-login`;
         };
 
         cancelBtn?.addEventListener("click", onCancel);
@@ -322,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function checkAuthStatus() {
         try {
-            const res = await fetch("/api/v1/auth/me");
+            const res = await apiFetch("/api/v1/auth/me");
             if (res.ok) {
                 const user = await res.json();
                 isAuthenticated = true;
@@ -371,7 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function fetchUsageStatus() {
         if (!isAuthenticated) return;
         try {
-            const res = await fetch("/api/v1/tailor/usage-status");
+            const res = await apiFetch("/api/v1/tailor/usage-status");
             if (res.ok) {
                 const data = await res.json();
                 updateUsageUI(data);
@@ -444,11 +471,11 @@ document.addEventListener("DOMContentLoaded", () => {
         resetTimerInterval = setInterval(updateTimer, 1000);
     }
 
-    const handleLogin = () => { window.location.href = "/api/v1/auth/login"; };
-    const handleDemoLogin = () => { window.location.href = "/api/v1/auth/demo-login"; };
+    const handleLogin = () => { window.location.href = `${API_BASE}/api/v1/auth/login`; };
+    const handleDemoLogin = () => { window.location.href = `${API_BASE}/api/v1/auth/demo-login`; };
     const handleLogout = async () => {
         try {
-            await fetch("/api/v1/auth/logout", { method: "POST" });
+            await apiFetch("/api/v1/auth/logout", { method: "POST" });
             showToast("Logged out successfully.", "success", "Signed Out");
             setTimeout(() => window.location.reload(), 1000);
         } catch (err) {
@@ -518,7 +545,7 @@ document.addEventListener("DOMContentLoaded", () => {
         historyBtn.textContent = "Loading...";
 
         try {
-            const res = await fetch("/api/v1/tailor/history");
+            const res = await apiFetch("/api/v1/tailor/history");
             if (!res.ok) throw new Error("Failed to fetch history");
             
             const history = await res.json();
@@ -607,7 +634,7 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("file", fileInput.files[0]);
 
         try {
-            const res = await fetch("/api/v1/resume/upload", {
+            const res = await apiFetch("/api/v1/resume/upload", {
                 method: "POST",
                 body: formData
             });
@@ -644,7 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!confirmed) return;
         
         try {
-            const res = await fetch("/api/v1/resume/active", {
+            const res = await apiFetch("/api/v1/resume/active", {
                 method: "DELETE"
             });
             
@@ -685,7 +712,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitMatchBtn.innerHTML = `<span>Analyzing Match with Groq...</span>`;
 
         try {
-            const res = await fetch("/api/v1/tailor/analyze-match", {
+            const res = await apiFetch("/api/v1/tailor/analyze-match", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -776,7 +803,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const res = await fetch("/api/v1/tailor/align", {
+            const res = await apiFetch("/api/v1/tailor/align", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -846,7 +873,7 @@ document.addEventListener("DOMContentLoaded", () => {
     downloadPdfBtn?.addEventListener("click", () => {
         if (!isAuthenticated) return showCustomAuthModal("Sign In Required", "Please sign in to download resumes.");
         if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error", "Not Ready");
-        window.location.href = `/api/v1/tailor/download-pdf/${currentTailoredId}`;
+        window.location.href = `${API_BASE}/api/v1/tailor/download-pdf/${currentTailoredId}`;
         showToast("Generating PDF document...", "info", "Downloading PDF");
     });
 
@@ -854,7 +881,7 @@ document.addEventListener("DOMContentLoaded", () => {
     downloadDocxBtn?.addEventListener("click", () => {
         if (!isAuthenticated) return showCustomAuthModal("Sign In Required", "Please sign in to download resumes.");
         if (!currentTailoredId) return showToast("No tailored resume ready for download.", "error", "Not Ready");
-        window.location.href = `/api/v1/tailor/download-docx/${currentTailoredId}`;
+        window.location.href = `${API_BASE}/api/v1/tailor/download-docx/${currentTailoredId}`;
         showToast("Generating Word document...", "info", "Downloading DOCX");
     });
 
@@ -867,7 +894,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function fetchActiveResume() {
         try {
-            const res = await fetch("/api/v1/resume/active");
+            const res = await apiFetch("/api/v1/resume/active");
             if (res.ok) {
                 const data = await res.json();
                 displayActiveResume(data.filename);
