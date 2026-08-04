@@ -22,7 +22,7 @@ if "sqlite" in db_url:
         if os.path.exists(test_file):
             os.remove(test_file)
     except Exception:
-        fallback_dir = os.path.expanduser("~/.resume_aligner")
+        fallback_dir = "/tmp" if os.access("/tmp", os.W_OK) else os.path.expanduser("~/.resume_aligner")
         os.makedirs(fallback_dir, exist_ok=True)
         fallback_path = os.path.join(fallback_dir, "resume_aligner.db")
         db_url = f"sqlite:///{fallback_path}"
