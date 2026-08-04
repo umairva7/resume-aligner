@@ -92,8 +92,9 @@ async def analyze_match_root(
             detail="Match Analysis failed. Please verify job description input."
         )
 
-# Include API endpoints
+# Include API endpoints with dual prefixes to support standard local API routes & serverless function proxies
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router, prefix="/v1")
 
 # Mount Static Frontend
 frontend_path = Path(__file__).resolve().parent.parent / "frontend"

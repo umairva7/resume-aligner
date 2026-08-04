@@ -36,7 +36,7 @@ async def login():
     return RedirectResponse(auth_url)
 
 @router.get("/demo-login")
-async def demo_login(response: Response, db: Session = Depends(deps.get_db)):
+async def demo_login(request: Request, response: Response, db: Session = Depends(deps.get_db)):
     """Instant single-click demo authentication for local testing & development."""
     try:
         demo_google_id = "demo_user_studio_99"
@@ -63,7 +63,8 @@ async def demo_login(response: Response, db: Session = Depends(deps.get_db)):
         db.add(user_session)
         db.commit()
 
-        redirect_response = RedirectResponse(url=settings.FRONTEND_URL)
+        target_url = request.headers.get("referer") or settings.FRONTEND_URL or "/"
+        redirect_response = RedirectResponse(url=target_url)
         redirect_response.set_cookie(
             key="session_token",
             value=session_token,
