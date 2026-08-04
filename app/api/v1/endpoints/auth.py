@@ -63,7 +63,12 @@ async def demo_login(request: Request, response: Response, db: Session = Depends
         db.add(user_session)
         db.commit()
 
-        target_url = request.headers.get("referer") or settings.FRONTEND_URL or "/"
+        referer = request.headers.get("referer", "")
+        if referer and "/auth/" not in referer and "/api/" not in referer:
+            target_url = referer
+        else:
+            target_url = settings.FRONTEND_URL or "/"
+
         redirect_response = RedirectResponse(url=target_url)
         redirect_response.set_cookie(
             key="session_token",
