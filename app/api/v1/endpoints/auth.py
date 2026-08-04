@@ -17,18 +17,27 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
 
 from app.core.logging import logger
 
+def get_dynamic_redirect_uri(request: Request) -> str:
+    redirect_uri = settings.GOOGLE_REDIRECT_URI
+    if not redirect_uri or "your-app.vercel.app" in redirect_uri or "localhost" in redirect_uri:
+        scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+        host = request.headers.get("x-forwarded-host", request.url.netloc)
+        return f"{scheme}://{host}/api/v1/auth/callback"
+    return redirect_uri
+
 @router.get("/login")
-async def login():
+async def login(request: Request):
     """Redirect to Google OAuth2 consent screen."""
     if not settings.GOOGLE_CLIENT_ID or settings.GOOGLE_CLIENT_ID.startswith("YOUR_"):
         # Fallback to demo login if Google Auth is not fully configured
         return RedirectResponse(url="/api/v1/auth/demo-login")
         
+    redirect_uri = get_dynamic_redirect_uri(request)
     auth_url = (
         f"{GOOGLE_AUTH_URL}?"
         f"response_type=code&"
         f"client_id={settings.GOOGLE_CLIENT_ID}&"
-        f"redirect_uri={settings.GOOGLE_REDIRECT_URI}&"
+        f"redirect_uri={redirect_uri}&"
         f"scope=openid%20email%20profile&"
         f"access_type=offline&"
         f"prompt=consent"
@@ -88,6 +97,7 @@ async def demo_login(request: Request, response: Response, db: Session = Depends
 async def callback(code: str, request: Request, response: Response, db: Session = Depends(deps.get_db)):
     """Handle Google OAuth2 callback, create user, and issue session cookie."""
     try:
+        redirect_uri = get_dynamic_redirect_uri(request)
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
             # 1. Exchange code for token
             token_res = await client.post(
@@ -97,7 +107,7 @@ async def callback(code: str, request: Request, response: Response, db: Session 
                     "client_id": settings.GOOGLE_CLIENT_ID,
                     "client_secret": settings.GOOGLE_CLIENT_SECRET,
                     "code": code,
-                    "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+                    "redirect_uri": redirect_uri,
                 }
             )
             if token_res.status_code != 200:
