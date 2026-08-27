@@ -640,7 +640,11 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!res.ok) {
-                if (res.status === 401) throw new Error("Session expired. Please sign in again.");
+                if (res.status === 401) {
+                    isAuthenticated = false;
+                    showCustomAuthModal("Session Expired", "Your session has expired. Please sign in to upload resumes.");
+                    throw new Error("Session expired. Please sign in again.");
+                }
                 const err = await res.json();
                 throw new Error(err.detail || "Upload failed");
             }
@@ -722,7 +726,11 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!res.ok) {
-                if (res.status === 401) throw new Error("Session expired. Please sign in again.");
+                if (res.status === 401) {
+                    isAuthenticated = false;
+                    showCustomAuthModal("Session Expired", "Your session has expired. Please sign in to analyze match scores.");
+                    throw new Error("Session expired. Please sign in again.");
+                }
                 const err = await res.json();
                 throw new Error(err.detail || "Match analysis failed");
             }
@@ -816,7 +824,11 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!res.ok) {
-                if (res.status === 401) throw new Error("Session expired. Please sign in again.");
+                if (res.status === 401) {
+                    isAuthenticated = false;
+                    showCustomAuthModal("Session Expired", "Your session has expired. Please sign in to tailor your resume.");
+                    throw new Error("Session expired. Please sign in again.");
+                }
                 const err = await res.json();
                 throw new Error(err.detail || "Tailoring failed");
             }
