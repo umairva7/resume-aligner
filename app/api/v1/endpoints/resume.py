@@ -42,7 +42,14 @@ async def upload_base_resume(
         )
 
     # Save to disk
-    filename, saved_path = storage_service.save_base_resume(file)
+    try:
+        filename, saved_path = storage_service.save_base_resume(file)
+    except Exception as e:
+        logger.error("Failed to save base resume file: %s", str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save resume file: {str(e)}"
+        )
 
     # Parse text
     try:
@@ -51,7 +58,7 @@ async def upload_base_resume(
         logger.error("Text parsing failed for %s: %s", filename, str(e))
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Failed to extract text from resume file."
+            detail=f"Failed to extract text from resume file ({str(e)})."
         )
 
     if len(extracted_text.strip()) < 20:

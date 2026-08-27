@@ -74,6 +74,11 @@ def get_usage_service(
 def get_current_user_optional(request: Request, db: Session = Depends(get_db)) -> Optional[models.User]:
     session_token = request.cookies.get("session_token")
     if not session_token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            session_token = auth_header.replace("Bearer ", "").strip()
+            
+    if not session_token:
         return None
         
     user_session = db.query(models.UserSession).filter(models.UserSession.session_token == session_token).first()

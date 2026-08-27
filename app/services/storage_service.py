@@ -4,6 +4,8 @@ import shutil
 from app.core.config import settings
 from app.utils.file_helpers import generate_unique_filename
 
+import os
+
 class StorageService:
     """OOP Service for managing local file persistence."""
 
@@ -13,8 +15,18 @@ class StorageService:
         self._ensure_dirs()
 
     def _ensure_dirs(self):
-        self.base_dir.mkdir(parents=True, exist_ok=True)
-        self.tailored_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self.base_dir.mkdir(parents=True, exist_ok=True)
+            self.tailored_dir.mkdir(parents=True, exist_ok=True)
+            test_file = self.base_dir / ".write_test"
+            test_file.touch()
+            test_file.unlink()
+        except Exception:
+            fallback_base = Path("/tmp/uploads") if os.access("/tmp", os.W_OK) else Path.home() / ".resume_aligner" / "uploads"
+            self.base_dir = fallback_base / "base_resumes"
+            self.tailored_dir = fallback_base / "tailored_resumes"
+            self.base_dir.mkdir(parents=True, exist_ok=True)
+            self.tailored_dir.mkdir(parents=True, exist_ok=True)
 
     def save_base_resume(self, upload_file: UploadFile) -> tuple[str, Path]:
         filename = generate_unique_filename(upload_file.filename or "resume.pdf")
