@@ -63,7 +63,7 @@ async def analyze_resume_match(
         logger.error("Match Analysis exception for user_id=%s: %s", current_user.id, str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Match Analysis processing failed. Please try again."
+            detail=f"Match Analysis processing failed ({str(e)}). Please try again."
         )
 
 

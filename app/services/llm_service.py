@@ -95,8 +95,9 @@ class GroqLLMProvider(BaseLLMProvider):
         self.model = model
 
     async def generate_response(self, system_prompt: str, user_prompt: str) -> str:
-        if not self.api_key:
-            raise ValueError("GROQ_API_KEY is not set in environment settings.")
+        if not self.api_key or self.api_key.startswith("YOUR_"):
+            logger.warning("[GROQ WARNING] GROQ_API_KEY is missing or unconfigured. Falling back to Mock Provider.")
+            return await MockLLMProvider().generate_response(system_prompt, user_prompt)
         
         url = "https://api.groq.com/openai/v1/chat/completions"
         headers = {
@@ -112,11 +113,15 @@ class GroqLLMProvider(BaseLLMProvider):
             "temperature": 0.3
         }
         
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(url, headers=headers, json=payload)
-            response.raise_for_status()
-            data = response.json()
-            return data["choices"][0]["message"]["content"]
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(url, headers=headers, json=payload)
+                response.raise_for_status()
+                data = response.json()
+                return data["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.error("[GROQ ERROR] Call failed (%s). Falling back to Mock Provider.", str(e))
+            return await MockLLMProvider().generate_response(system_prompt, user_prompt)
 
 
 class GeminiLLMProvider(BaseLLMProvider):
